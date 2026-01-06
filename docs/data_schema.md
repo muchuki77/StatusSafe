@@ -1,12 +1,12 @@
 ## Purpose
-The schema defines the exact fields required in phase 1 of SevisBridge
-Each file evaluates one student record at a time
+-The schema defines the exact fields required in phase 1 of SevisBridge
+-Each file evaluates one student record at a time
 
-# General information
-Dates are **ISO 8601** format: `YYYY-MM-DD`
-Booleans are lower case: 'true' or 'false'
-Strings are lower case unless otherwise stated
-No field is nullable, if the value is unknown the record is invalid for phase 1
+## General information
+-Dates are **ISO 8601** format: `YYYY-MM-DD`
+-Booleans are lower case: 'true' or 'false'
+-Strings are lower case unless otherwise stated
+-No field is nullable, if the value is unknown the record is invalid for phase 1
 
 ## Student record
 ### student_id
