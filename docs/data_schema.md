@@ -1,18 +1,18 @@
 ## Purpose
--The schema defines the exact fields required in phase 1 of SevisBridge
--Each file evaluates one student record at a time
+- The schema defines the exact fields required in phase 1 of SevisBridge
+- Each file evaluates one student record at a time
 
 ## General information
--Dates are **ISO 8601** format: `YYYY-MM-DD`
--Booleans are lower case: 'true' or 'false'
--Strings are lower case unless otherwise stated
--No field is nullable, if the value is unknown the record is invalid for phase 1
+- Dates are **ISO 8601** format: `YYYY-MM-DD`
+- Booleans are lower case: 'true' or 'false'
+- Strings are lower case unless otherwise stated
+- No field is nullable, if the value is unknown the record is invalid for phase 1
 
 ## Student record
-### student_id
--type - string
--required - yes
--allowed values - '0-9'
+### 1.) student_id
+- type - string
+- required - yes
+- allowed values - '0-9'
 
 ### 2.) Today
 - type -> date ('YYYY-MM-DD')
@@ -75,7 +75,7 @@ A StudentRecord is **invalid** (Phase 1 must refuse to evaluate) if any of the f
 
 ---
 
-## Example (valid)
+### example
 ```json
 {
   "student_id": "stu_01928",
@@ -88,15 +88,3 @@ A StudentRecord is **invalid** (Phase 1 must refuse to evaluate) if any of the f
   "sevis_updated": false
 }
 
-
-
-Define the required fields
-Define allowed vaues for each field
-- enrollment_status
-- full_time
-- program_level
-- program_start_date
-- opt_end_date
-- sevis_updated
-- today
-Mock student records
