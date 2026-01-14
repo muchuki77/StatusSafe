@@ -61,7 +61,7 @@ def rule_001_opt_ended_without_sevis_update(student_record: Dict[str, Any]) -> R
         status="Pass",
         severity="Info",
         message="No issues detected with OPT end date and SEVIS update.",
-        recommned_action="No action needed.",
+        recommended_action="No action needed.",
         evidence={
             "today": student_record("today"),
             "opt_end_date": student_record("opt_end_date"),
@@ -84,7 +84,9 @@ def evaluate_rules(student_record: Dict[str, Any]) -> Dict[str, Any]:
     Minimal phase 1 rule engine assumes that student record conforms to data_schema.md.
     """
 
-    rules: List[Callable[[Dict[str, Any]], RuleResult]] = [rule_001_opt_ended_without_sevis_update]
+    rules: List[Callable[[Dict[str, Any]], RuleResult]] = [
+        rule_001_opt_ended_without_sevis_update,
+        rule_002_enrollment_without_sevis_program_extension_update,]
     results = [rule(student_record)for rule in rules]
     overall = compute_overall_status(results)
 
@@ -95,24 +97,68 @@ def evaluate_rules(student_record: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 if __name__ == "___main__":
-    sample_student_record = {
-        "student_id": "S12345678",
-        "today": "2024-06-15",
+    student_record = {
+        "student_id": "stu_smoke_001",
+        "today": "2026-01-14",
         "enrollment_status": "enrolled",
         "full_time": True,
         "program_level": "graduate",
-        "prgram_start_date": "2022-09-01",
-        "opt_end_date": "2024-05-30",
-        "sevis_updated": False,
+        "prgram_start_date": "2025-08-26",
+        "opt_end_date": "2026-07-15",
+        "sevis_updated": False
     }
-
-    output = evaluate_rules(sample_student_record)
+    output = evaluate_rules(student_record)
     print(output)
 
-    
+
+if __name__ == "__main__":
+    print("hello")
 
 
+#####################################################################################################
 
+#Risk Level: - RED Description:
+#Enrollment in a new academic program without a recorded SEVIS program extension
+# transfer may indicate misalignment between registration and immigration records. 
+# Trigger Condition:
+        #enrollment_status is "enrolled", AND  sevis_updated is false 
+        # Reason Provided:student enrolled but SEVIS program extension not recorded. 
+# OUTPUT: Severity: Critical
+#Recommended action:Confirm SEVIS program dates and update records as needed. Confirm the change and program_start_date.
 
+def rule_002_enrollment_without_sevis_program_extension_update(student_record: Dict[str, any]) -> RuleResult:
+    today = parse_iso_date(student_record['today'], 'today')
+    enrollment_status = student_record["enrollment_status"]
+    sevis_updated = student_record["sevis_updated"]
 
+    triggered = (enrollment_status == "enrolled") and (sevis_updated is False)
+
+    if triggered:
+        return RuleResult(
+            rule_id="R002",
+            name="Enrollment without SEVIS update",
+            status="Triggered",
+            severity="Critical", # Risk level: RED
+            message="Student enrolled but SEVIS program extension not recorded.",
+            recommended_action="Confirm SEVIS program dates and update records as needed.",
+            evidence={
+                "today": student_record("today"),
+                "enrollment_status": enrollment_status,
+                "sevis_updated": sevis_updated,   
+                "program_start_date": student_record("program_start_date"),
+            },
+        )
+    return RuleResult(
+        rule_id="R002",
+        name="Enrollment without SEVIS update",
+        status="Pass",
+        severity="Info",
+        message="No issues detected with enrollment status and SEVIS update.",
+        recommned_action="No action needed.",
+        evidence={
+            "today": student_record("today"),
+            "enrollment_status": enrollment_status,
+            "sevis_updated": sevis_updated,   
+        },
+    )   
 
