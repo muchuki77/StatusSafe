@@ -33,11 +33,14 @@ Review SEVIS record and confirm next decision.
 **Risk Level:** - RED
 **Description:**  
 Enrollment in a new academic program without a recorded SEVIS program extension or transfer may indicate misalignment between registration and immigration records.
-**Trigger Condition:**  
+
+***Trigger Condition:**  
 - `enrollment_status` is "enrolled", AND  `sevis_updated` is false
-**Reason Provided:**  
- Student enrolled but SEVIS program extension not recorded.
-**Recommended Action:**  
+  
+***Reason Provided:**  
+ - Student enrolled but SEVIS program extension not recorded.
+
+***Recommended Action:**  
 - Confirm SEVIS program dates and update records as needed. Confirm the change and program_start_date.
 
 ### Rule 3: OPT Grace Period Nearing Expiration
