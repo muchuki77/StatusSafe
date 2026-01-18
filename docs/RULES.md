@@ -38,7 +38,7 @@ Enrollment in a new academic program without a recorded SEVIS program extension 
 - `enrollment_status` is "enrolled", AND  `sevis_updated` is false
   
 ***Reason Provided:**  
- - Student enrolled but SEVIS program extension not recorded.
+- Student enrolled but SEVIS program extension not recorded.
 
 ***Recommended Action:**  
 - Confirm SEVIS program dates and update records as needed. Confirm the change and program_start_date.
@@ -47,13 +47,15 @@ Enrollment in a new academic program without a recorded SEVIS program extension 
 **Risk Level:** YELLOW
 **Description:**  
 When a student is approaching the end of the OPT grace period without a confirmed SEVIS update, early attention can prevent downstream compliance issues.
-**Trigger Condition:**  
-- `opt_end_date` is within the last 60 days, AND  `sevis_updated` is false
-**Reason Provided:**  
- OPT grace period nearing expiration without SEVIS update.
-**Recommended Action:**  
-- Review transition timeline and confirm next academic steps.
-- 
+
+***Trigger Condition:**  
+-`opt_end_date` is within the last 60 days, AND  `sevis_updated` is false.
+  
+***Reason Provided:**
+ - OPT grace period nearing expiration without SEVIS update.
+
+***Recommended Action:**  
+- Review transition timeline and confirm next academic steps. 
 
 ### Rule 4: Under-Enrollment While on F-1
 **Risk Level:** YELLOW
