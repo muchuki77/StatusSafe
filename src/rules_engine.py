@@ -159,6 +159,82 @@ def rule_003_opt_grace_period_nearing_expiration(student_record: Dict[str, Any])
             "sevis_updated": sevis_updated,   
         },
     )
+#####################################################################################################
+# Rule 4: Under-Enrollment While on F-1
+# Risk Level: YELLOW Description:F-1 students are generally required to maintain full-time enrollment. 
+#            Under-enrollment without authorization may require review or documentation. 
+# Trigger Condition:enrollment_status is "enrolled", AND  full_time is false 
+# Reason Provided:Student is enrolled but not full time while maintaining F-1 status. 
+# Recommended Action:Verify enrollment authorization or initiate corrective steps.
+def rule_004_under_enrollment_while_on_f1(student_record: Dict[str, Any]) -> RuleResult:
+    enrollment_status = student_record["enrollment_status"]
+    full_time = student_record["full_time"]
+
+    triggered = (enrollment_status == "enrolled") and (full_time is False)
+
+    if triggered:
+        return RuleResult(
+            rule_id="R004",
+            name="Under-Enrollment While on F-1",
+            status="Triggered",
+            severity="Warning", # Risk level: YELLOW
+            message="Student is enrolled but not full time while maintaining F-1 status.",
+            recommended_action="Verify enrollment authorization or initiate corrective steps.",
+            evidence={
+                "enrollment_status": enrollment_status,
+                "full_time": full_time,   
+            },
+        )
+    return RuleResult(
+        rule_id="R004",
+        name="Under-Enrollment While on F-1",
+        status="Pass",
+        severity="Info",
+        message="No issues detected with enrollment status and full-time requirement.",
+        recommended_action="No action needed.",
+        evidence={
+            "enrollment_status": enrollment_status,
+            "full_time": full_time,   
+        },
+    )
+
+#####################################################################################################
+#Rule 5: No issues detected
+#*** Risk level** GREEN Student is fully enrolled, has maintained F1 status with sevis record active and updated.
+def rule_005_no_issues_detected(student_record: Dict[str, Any]) -> RuleResult:
+    enrollment_status = student_record["enrollment_status"]
+    full_time = student_record["full_time"]
+    sevis_updated = student_record["sevis_updated"]
+
+    triggered = not (enrollment_status == "enrolled" and full_time is True and sevis_updated is True)
+
+    if triggered:
+        return RuleResult(
+            rule_id="R005",
+            name="No Issues Detected",
+            status="Pass",
+            severity="Info", # Risk level: GREEN
+            message="Student is fully enrolled, has maintained F1 status with SEVIS record active and updated.",
+            recommended_action="No action needed.",
+            evidence={
+                "enrollment_status": enrollment_status,
+                "full_time": full_time,
+                "sevis_updated": sevis_updated,   
+            },
+        )
+    return RuleResult(
+        rule_id="R005",
+        name="No Issues Detected",
+        status="Pass",
+        severity="Info",
+        message="No issues detected with enrollment status, full-time requirement, and SEVIS update.",
+        recommended_action="No action needed.",
+        evidence={
+            "enrollment_status": enrollment_status,
+            "full_time": full_time,
+            "sevis_updated": sevis_updated,   
+        },
+    )
 
 #####################################################################################################
 def compute_overall_status(results: list[RuleResult]) -> str:
@@ -180,6 +256,8 @@ def evaluate_rules(student_record: Dict[str, Any]) -> Dict[str, Any]:
         rule_001_opt_ended_without_sevis_update,
         rule_002_enrollment_without_sevis_program_extension_update,
         rule_003_opt_grace_period_nearing_expiration,
+        rule_004_under_enrollment_while_on_f1,
+        rule_005_no_issues_detected,
         ]
     results = [rule(student_record)for rule in rules]
     overall = compute_overall_status(results)
