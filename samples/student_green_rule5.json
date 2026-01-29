@@ -1,0 +1,9 @@
+{
+  "student_id": "S-GREEN",
+  "enrollment_status": "enrolled",
+  "full_time": true,
+  "program_level":"graduate",
+  "program_start_date": "2026-01-16",
+  "opt_end_date": "2026_06_01",
+  "sevis_updated": true
+}
