@@ -1,10 +1,10 @@
 {
   "student_id": "S_YELLOW_04",
   "enrollment_satus": "enrolled",
-  "full_time": false'
+  "full_time": false,
   "program_level": "graduate",
   "program_start_date": "2026-01-09",
-  "opt_end_date": 2026-06-01",
+  "opt_end_date": "2026-06-01",
   "sevis_updated":true
 }
 
