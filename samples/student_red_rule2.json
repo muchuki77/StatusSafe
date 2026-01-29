@@ -1,0 +1,9 @@
+{
+  "student_id": "S-RED-R2",
+  "enrollment_status": "enrolled",
+  "full_time": True,
+  "program_level": "graduate",
+  "program_start_date": "2026-01-15",
+  "sevis_updated": False
+}
+
