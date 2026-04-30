@@ -69,7 +69,7 @@ def rule_001_opt_ended_without_sevis_update(student_record: Dict[str, Any]) -> R
         },
     )
 
-###############################################################
+#####
 #Risk Level: - RED Description:
 #Enrollment in a new academic program without a recorded SEVIS program extension
 # transfer may indicate misalignment between registration and immigration records. 
@@ -115,7 +115,7 @@ def rule_002_enrollment_without_sevis_program_extension_update(student_record: D
         },
     )   
 
-##############################################################
+######
 ### Rule 3: OPT Grace Period Nearing Expiration
 ##Risk Level:** YELLOW
 ##Description:When a student is approaching the end of the OPT grace period without a confirmed SEVIS update, early attention can prevent downstream compliance issues.
@@ -159,7 +159,7 @@ def rule_003_opt_grace_period_nearing_expiration(student_record: Dict[str, Any])
             "sevis_updated": sevis_updated,   
         },
     )
-##############################################################
+#####
 # Rule 4: Under-Enrollment While on F-1
 # Risk Level: YELLOW Description:F-1 students are generally required to maintain full-time enrollment. 
 #            Under-enrollment without authorization may require review or documentation. 
@@ -198,7 +198,7 @@ def rule_004_under_enrollment_while_on_f1(student_record: Dict[str, Any]) -> Rul
         },
     )
 
-#############################################################
+#####
 #Rule 5: No issues detected
 #*** Risk level** GREEN Student is fully enrolled, has maintained F1 status with sevis record active and updated.
 def rule_005_no_issues_detected(student_record: Dict[str, Any]) -> RuleResult:
@@ -236,7 +236,7 @@ def rule_005_no_issues_detected(student_record: Dict[str, Any]) -> RuleResult:
         },
     )
 
-##############################################################
+#####
 def compute_overall_status(results: list[RuleResult]) -> str:
     for result in results:
         if result.status == "Triggered" and result.severity == "Critical":
