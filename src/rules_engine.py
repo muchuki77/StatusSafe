@@ -26,7 +26,7 @@ def parse_iso_date(value:str, field_name:str) -> date:
     try: 
         return date.fromisoformat(value)
     except ValueError as e:
-        raise ValueError(f"{field_name} must be YYYY-MM-DD format!r") from e
+        raise ValueError(f"{field_name} must be YYYY-MM-DD format") from e
     
 # Rule R001: OPT ended without SEVIS update (Risk level: RED)
 # Trigger: opt_end_date < today AND sevis_updated is False   
@@ -227,8 +227,8 @@ def rule_005_no_issues_detected(student_record: Dict[str, Any]) -> RuleResult:
         name="No Issues Detected",
         status="Pass",
         severity="Info",
-        message="No issues detected with enrollment status, full-time requirement, and SEVIS update.",
-        recommended_action="No action needed.",
+        message="Some conditions for full compliance were not met",
+        recommended_action="Review other triggered rules above",
         evidence={
             "enrollment_status": enrollment_status,
             "full_time": full_time,
@@ -236,7 +236,7 @@ def rule_005_no_issues_detected(student_record: Dict[str, Any]) -> RuleResult:
         },
     )
 
-#####
+
 def compute_overall_status(results: list[RuleResult]) -> str:
     for result in results:
         if result.status == "Triggered" and result.severity == "Critical":
