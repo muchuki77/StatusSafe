@@ -21,12 +21,12 @@ it focuses exclusisvely on correctness, logic and traceability not user interfac
 - It does not provide any legal advice
 - Intergrate with SEVIS, DHS, or any government system
 - Store or process any real student data
-- determine or assert immigation or ;egal status
+- determine or assert immigation or legal status
 - inclue authentication or role-based access
 - include graphical user interface
-- Sebd notifications via text, email or any alerts
+- Send notifications via text, email or any alerts
 - Handle document uploads or verification
-- Handle mulitple students/batch processing
+- Handle multiple students/batch processing
 - Implememt institutional policy customization
 
 ## Success criteria
