@@ -1,6 +1,7 @@
 {
   "student_id": "S_YELLOW_04",
-  "enrollment_satus": "enrolled",
+  "today": "2026-01-14",
+  "enrollment_status": "enrolled",
   "full_time": false,
   "program_level": "graduate",
   "program_start_date": "2026-01-09",

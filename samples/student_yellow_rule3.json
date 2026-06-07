@@ -1,10 +1,11 @@
 {
   "student_id": "S-YELLOW-R3",
-  "enrollment_status": "not_enrolled",
-  "full_time": false,
+  "today": "2026-01-14",
+  "enrollment_status": "enrolled",
+  "full_time": true,
   "program_level": "graduate",
   "program_start_date": "2026-02-01",
-  "opt_end_date": "2026-01-10",
+  "opt_end_date": "2025-12-15",
   "sevis_updated": false
 }
 

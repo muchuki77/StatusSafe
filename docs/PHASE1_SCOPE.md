@@ -21,10 +21,10 @@ it focuses exclusisvely on correctness, logic and traceability not user interfac
 - It does not provide any legal advice
 - Intergrate with SEVIS, DHS, or any government system
 - Store or process any real student data
-- determine or assert immigation or ;egal status
+- determine or assert immigation or legal status
 - inclue authentication or role-based access
 - include graphical user interface
-- Sebd notifications via text, email or any alerts
+- Send notifications via text, email or any alerts
 - Handle document uploads or verification
 - Handle mulitple students/batch processing
 - Implememt institutional policy customization
@@ -43,7 +43,7 @@ Phase 1 is considered complete when;
 - the rules engine can be extended without modifying the existing rules.
 
 ## Phase1 non goals
-- The following are not phase goals and have been deffered for later phases
+- The following are not phase 1 goals and have been deffered for later phases
 - User interfaces and dashboards
 - Advisor or student workflows
 - Institutional policy configuration
@@ -55,7 +55,7 @@ Phase 1 is considered complete when;
 At the end of phase 1, the project will include:
 - a rules engine implementation
 - A documented rule set(RULES.md)
-- sample input and putput records
+- sample input and output records
 - automated tests
 - clear documentation for future purposes
 

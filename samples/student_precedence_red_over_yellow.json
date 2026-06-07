@@ -1,0 +1,10 @@
+{
+    "student_id": "student_precedence_red_over_yellow",
+    "today": "2026-01-14",
+    "enrollment_status": "enrolled",
+    "full_time": false,
+    "program_level": "graduate",
+    "program_start_date": "2026-01-09",
+    "opt_end_date": "2026-06-01",
+    "sevis_updated": false 
+}

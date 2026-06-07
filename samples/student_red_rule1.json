@@ -1,10 +1,11 @@
 {
  "student_id": "S_RED_R1",
- "enrollement_status": "not_enrolled",
- "Full_time": false,
+ "today": "2026-01-14",
+ "enrollment_status": "not_enrolled",
+ "full_time": false,
  "program_level": "graduate",
  "program_start_date": "2026-01-15",
  "opt_end_date": "2025-11-01",
- "sevis_update": false
+ "sevis_updated": false
 }
 

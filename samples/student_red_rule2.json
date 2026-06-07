@@ -1,9 +1,11 @@
 {
   "student_id": "S-RED-R2",
+  "today": "2026-01-14",
   "enrollment_status": "enrolled",
   "full_time": true,
   "program_level": "graduate",
   "program_start_date": "2026-01-15",
+  "opt_end_date": "2027-01-01",
   "sevis_updated": false
 }
 
