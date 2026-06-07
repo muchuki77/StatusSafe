@@ -26,7 +26,7 @@ it focuses exclusisvely on correctness, logic and traceability not user interfac
 - include graphical user interface
 - Send notifications via text, email or any alerts
 - Handle document uploads or verification
-- Handle mulitple students/batch processing
+- Handle multiple students/batch processing
 - Implememt institutional policy customization
 
 ## Success criteria
