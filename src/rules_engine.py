@@ -36,10 +36,10 @@ def parse_iso_date(value:str, field_name:str) -> date:
 
 def rule_001_opt_ended_without_sevis_update(student_record: Dict[str, Any]) -> RuleResult:
     today = parse_iso_date(student_record['today'], 'today')
-    opt_end = parse_iso_date(student_record["opt_end_date"], "opt_end_date")
+    opt_end_date = parse_iso_date(student_record["opt_end_date"], "opt_end_date")
     sevis_updated = student_record["sevis_updated"]
 
-    triggered = (opt_end < today) and (sevis_updated is False)
+    triggered = (opt_end_date < today) and (sevis_updated is False)
 
     if triggered:
         return RuleResult(
@@ -268,6 +268,50 @@ def evaluate_rules(student_record: Dict[str, Any]) -> Dict[str, Any]:
         "rule_results": [result.to_dict() for result in results],
     }
 
+#####
+def print_report(output: Dict[str, Any]) -> None:
+    """
+    Prints a clean, readable compliance report to the terminal.
+    """
+    status = output["overall_status"]
+    results = output["rule_results"]
+
+    # Status icons
+    icons = {"RED": "🔴", "YELLOW": "🟡", "GREEN": "🟢"}
+    severity_icons = {"Critical": "🔴", "Warning": "🟡", "Info": "🟢"}
+    print("\n" + "=" * 55)
+    print("  SEVIS BRIDGE — COMPLIANCE REPORT")
+    print("=" * 55)
+    print(f"  Overall Status: {icons.get(status, '')} {status}")
+    print("=" * 55)
+
+    # Triggered rules first
+    triggered = [r for r in results if r["status"] == "Triggered"]
+    passing = [r for r in results if r["status"] == "Pass"]
+
+    if triggered:
+        print("\n  ⚠️  TRIGGERED RULES:")
+        for rule in triggered:
+            icon = severity_icons.get(rule["severity"], "")
+            print(f"\n  {icon} [{rule['rule_id']}] {rule['name']}")
+            print(f"     Severity : {rule['severity']}")
+            print(f"     Issue    : {rule['message']}")
+            print(f"     Action   : {rule['recommended_action']}")
+            print(f"     Evidence :")
+            for key, value in rule["evidence"].items():
+                print(f"               - {key}: {value}")
+
+    if passing:
+        print("\n  ✅  PASSING RULES:")
+        for rule in passing:
+            print(f"     • [{rule['rule_id']}] {rule['name']}")
+
+    print("\n" + "=" * 55)
+    print("  ⚠️  This tool does not provide legal advice.")
+    print("  All data shown is for demonstration only.")
+    print("=" * 55 + "\n")
+
+
 if __name__ == "__main__":
     student_record = {
         "student_id": "stu_smoke_001",
@@ -280,5 +324,7 @@ if __name__ == "__main__":
         "sevis_updated": False
     }
     output = evaluate_rules(student_record)
-    print(output)
+    print_report(output)
+
+
 
