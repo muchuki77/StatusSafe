@@ -11,7 +11,9 @@ The GOAL: Spot and reduce unintentional immigration risk by improving institutio
 
 ## Author
 Maryanne Muchuki
+
 Built: 2026
+
 Inspired by personal experience navigating F-1 status reinstatement.
 
 ## live demo
