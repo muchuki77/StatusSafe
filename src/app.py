@@ -38,7 +38,7 @@ st.sidebar.markdown(
 st.sidebar.divider()
 
 # Risk level reference
-st.sidebar.markdown("**🚦 Risk Levels**")
+st.sidebar.markdown("**🔔 Risk Levels**")
 st.sidebar.markdown("🟢 **Green** — No issues detected")
 st.sidebar.markdown("🟡 **Yellow** — Take caution! Review your situation")
 st.sidebar.markdown("🔴 **Red** — Critical! Contact your DSO now")
