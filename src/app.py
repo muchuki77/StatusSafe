@@ -27,8 +27,36 @@ st.sidebar.markdown(
     "administrators navigating common transition points."
 )
 st.sidebar.divider()
+
+st.sidebar.markdown("**📖 How to use**")
+st.sidebar.markdown(
+    "1. Select the profile that matches your situation\n"
+    "2. Click **Run Compliance Check**\n"
+    "3. Read your risk result\n"
+    "4. Follow the recommended action"
+)
+st.sidebar.divider()
+
+# Risk level reference
+st.sidebar.markdown("**🚦 Risk Levels**")
+st.sidebar.markdown("🟢 **Green** — No issues detected")
+st.sidebar.markdown("🟡 **Yellow** — Take caution! Review your situation")
+st.sidebar.markdown("🔴 **Red** — Critical! Contact your DSO now")
+
+st.sidebar.divider()
+
+st.sidebar.info(
+    "💼 **Always contact your DSO**\n\n"
+    "This tool helps you know *when* to reach out. "
+    "Your Designated School Official (DSO)is your authoritative "
+    "source for all immigration decisions."
+)
+
+st.sidebar.divider()
+
 st.sidebar.warning(
-    "⚠️ This tool does not provide legal advice and does "
+    "⚠️ ** Disclaimer** \n\n"
+    "This tool does not provide legal advice and does "
     "not interact with real SEVIS or student data. "
     "All profiles shown are mock data for illustration "
     "and educational purposes only."
