@@ -20,7 +20,10 @@
 - required - yes
 - Allowed values - any valid calendar date
 
-### 3) enrollment_status
+### 3.) student_phase
+- "enrolled", "opt" or "grace_period"
+
+### 4) enrollment_status
 - **Type:** enum (string)
 - **Required:** yes
 - **Allowed values:**
@@ -28,13 +31,13 @@
   - `not_enrolled`
 - **Notes:** This is the student’s current enrollment state for the academic term in scope.
 
-### 4) full_time
+### 5) full_time
 - **Type:** boolean
 - **Required:** yes
 - **Allowed values:** `true`, `false`
 - **Notes:** Indicates whether the student is currently enrolled at a full-time course load for their program level.
 
-### 5) program_level
+### 6) program_level
 - **Type:** enum (string)
 - **Required:** yes
 - **Allowed values:**
@@ -42,7 +45,7 @@
   - `graduate`
 - **Notes:** Phase 1 assumes rules may differ by level.
 
-### 6) program_start_date
+### 7) program_start_date
 - **Type:** date (`YYYY-MM-DD`)
 - **Required:** yes
 - **Allowed values:** any valid calendar date
@@ -50,15 +53,15 @@
   - must be `<= today`
 - **Notes:** The start date of the current program (or program instance) being evaluated.
 
-### 7) opt_end_date
+### 8) opt_end_date
 - **Type:** date (`YYYY-MM-DD`)
-- **Required:** yes
+- **Required:** no - only required if student is on opt
 - **Allowed values:** any valid calendar date
 - **Constraints:**
-  - must be `>= program_start_date`
-- **Notes:** For Phase 1, this is treated as a known date used for “time-to-OPT-end” checks. If OPT does not apply, do not pass a record into Phase 1 evaluation (Phase 1 is strict).
+  - if present, must be `>= program_start_date`
+- **Notes:** leave blank or omit entirely for students who have not reached OPT stage. R001 and R003 are skipped automatically when this field is absent.
 
-### 8) sevis_updated
+### 9) sevis_updated
 
 - **Type:** boolean
 - **Required:** yes

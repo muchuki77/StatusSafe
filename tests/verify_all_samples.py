@@ -22,6 +22,7 @@ samples = [
     os.path.join(SAMPLES_DIR, "student_yellow_rule4.json"),
     os.path.join(SAMPLES_DIR, "student_green_rule5.json"),
     os.path.join(SAMPLES_DIR, "student_precedence_red_over_yellow.json"),
+    os.path.join(SAMPLES_DIR, "student_enrolled_no_opt.json"),
 ]
 
 expected = {
@@ -31,6 +32,7 @@ expected = {
     "student_yellow_rule4.json": "YELLOW",
     "student_green_rule5.json": "GREEN",
     "student_precedence_red_over_yellow.json": "RED",
+    "student_enrolled_no_opt.json": "GREEN",
 }
 
 print("\n" + "=" * 55)

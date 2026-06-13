@@ -35,6 +35,20 @@ def parse_iso_date(value:str, field_name:str) -> date:
 # Review SEVIS record and confirm next decision.
 
 def rule_001_opt_ended_without_sevis_update(student_record: Dict[str, Any]) -> RuleResult:
+
+    # Skip this rule if opt_end_date not provided
+    if "opt_end_date" not in student_record or \
+        student_record["opt_end_date"] == "":
+        return RuleResult(
+            rule_id="R001",
+            name="OPT ended without SEVIS update",
+            status="Pass",
+            severity="Info",
+            message="opt_end_date not provided — rule not applicable.",
+            recommended_action="No action needed.",
+            evidence={}
+        )
+    
     today = parse_iso_date(student_record['today'], 'today')
     opt_end_date = parse_iso_date(student_record["opt_end_date"], "opt_end_date")
     sevis_updated = student_record["sevis_updated"]
@@ -125,6 +139,20 @@ def rule_002_enrollment_without_sevis_program_extension_update(student_record: D
 ##Recommended Action:Review transition timeline and confirm next academic steps.
 
 def rule_003_opt_grace_period_nearing_expiration(student_record: Dict[str, Any]) -> RuleResult:
+
+    # Skip this rule if opt_end_date not provided
+    if "opt_end_date" not in student_record or \
+        student_record["opt_end_date"] == "":
+        return RuleResult(
+            rule_id="R001",
+            name="OPT ended without SEVIS update",
+            status="Pass",
+            severity="Info",
+            message="opt_end_date not provided — rule not applicable.",
+            recommended_action="No action needed.",
+            evidence={}
+        )
+    
     today = parse_iso_date(student_record['today'], 'today')
     opt_end = parse_iso_date(student_record["opt_end_date"], "opt_end_date")
     sevis_updated = student_record["sevis_updated"]
@@ -312,6 +340,87 @@ def print_report(output: Dict[str, Any]) -> None:
     print("=" * 55 + "\n")
 
 
+#####
+# Phase 2
+def validate_csv_row(row: Dict[str, str]) -> Dict[str, Any]:
+    """
+    Validates a csv row aagainst phase 1 data schema.
+    Returns a dict with ;
+    - Valid :True or False
+    - Reason: If not valid, provides reason for failure  and none if valid
+    """
+    required_fields = [
+        "student_id", "today", "enrollment_status","full_time", "program_level", "program_start_date", "sevis_updated"
+    ]
+
+    valid_enrollment = ["enrolled", "not_enrolled"]
+    valid_program    = ["undergraduate", "graduate"]
+
+    # 1: check for all required fields
+    for field in required_fields:
+        if field not in row or row[field] == "":
+            return {"valid": False, "reason": f"Missing required field: {field}"}
+    # 2: Date format validation
+    date_fields = ["today", "program_start_date"]
+    parsed = {}
+    for field in date_fields:
+        try:
+            parsed[field] = parse_iso_date(row[field], field)
+        except ValueError:
+            return {
+                "valid": False,
+                "reason": f"{field} must be in YYYY-MM-DD format"
+            }
+    
+    # 3: Program start date must be <= today
+    if parsed["program_start_date"] > parsed["today"]:
+        return {
+            "valid": False,
+            "reason": "program_start_date cannot be in the future"
+        }
+    # 4: validate opt date only if provided (opt_end_date is optional for students not on OPT)
+    if "opt_end_date" in row and row["opt_end_date"] != "":
+        try:
+            parsed["opt_end_date"] = parse_iso_date(str(row["opt_end_date"]), "opt_end_date")
+        except ValueError:
+            return {
+                "valid": False,
+                "reason": "opt_end_date must be in YYYY-MM-DD format"
+        }
+
+    if parsed["opt_end_date"] < parsed["program_start_date"]:
+        return {
+            "valid": False,
+            "reason": "opt_end_date cannot be before program_start_date"
+        }
+
+
+    
+    # 5: enrollment status validation
+    if row["enrollment_status"] not in valid_enrollment:
+        return {
+            "valid": False,
+            "reason": f"enrollment_status must be one of {valid_enrollment}"
+        }
+    # 6: program level validation
+    if row["program_level"] not in valid_program:
+        return {
+            "valid": False,
+            "reason": f"program_level must be one of {valid_program}"
+        }
+    # 7: Boolean fields validation
+    for bool_field in ["full_time", "sevis_updated"]:
+        val = row[bool_field]
+        if isinstance(val, str):
+            if val.lower() not in ["true", "false"]:
+                return {
+                    "valid": False,
+                    "reason": f"{bool_field} must be true or false"
+                }
+
+    return {"valid": True, "reason": None}
+    
+#####
 if __name__ == "__main__":
     student_record = {
         "student_id": "stu_smoke_001",
@@ -327,4 +436,31 @@ if __name__ == "__main__":
     print_report(output)
 
 
+if __name__ == "__main__":
+    # Valid row
+    good_row = {
+        "student_id": "stu_001",
+        "today": "2026-01-14",
+        "enrollment_status": "enrolled",
+        "full_time": True,
+        "program_level": "graduate",
+        "program_start_date": "2025-08-26",
+        "opt_end_date": "2026-07-15",
+        "sevis_updated": False
+    }
+
+    # Invalid row — missing field
+    bad_row = {
+        "student_id": "stu_002",
+        "today": "2026-01-14",
+        "enrollment_status": "enrolled",
+        "full_time": True,
+        "program_level": "graduate",
+        "program_start_date": "2025-08-26",
+        # opt_end_date missing
+        "sevis_updated": False
+    }
+
+    print(validate_csv_row(good_row))
+    print(validate_csv_row(bad_row))
 
