@@ -77,7 +77,7 @@ A StudentRecord is **invalid** (Phase 1 must refuse to evaluate) if any of the f
 
 ---
 
-### example
+#### example
 ```json
 {
   "student_id": "stu_01928",
@@ -89,6 +89,7 @@ A StudentRecord is **invalid** (Phase 1 must refuse to evaluate) if any of the f
   "opt_end_date": "2026-07-15",
   "sevis_updated": false
 }
+```
 
 ## PHASE 2 
 ## Purpose 
@@ -115,7 +116,7 @@ Each valid row produces:
 - student_id
 - overall_status: Red, Yellow or Green
 - Triggered rules: a list of rules 
-- Recommened action
+- Recommended action
 
 ---
 
