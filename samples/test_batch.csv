@@ -1,0 +1,6 @@
+student_id,today,enrollment_status,full_time,program_level,program_start_date,opt_end_date,sevis_updated
+stu_001,2026-01-14,enrolled,true,graduate,2025-08-26,2025-12-01,false
+stu_002,2026-01-14,enrolled,true,graduate,2025-08-26,2027-01-01,true
+stu_003,2026-01-14,enrolled,false,graduate,2025-08-26,2027-01-01,true
+stu_004,2026-01-14,enrolled,true,undergraduate,2025-09-01,,true
+stu_005,2026-01-14,enrolled,true,graduate,2025-08-26,2026-02-28,false

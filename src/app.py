@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 import sys
+from rules_engine import evaluate_rules, process_batch
 
 # Ensure src is on the path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -154,3 +155,84 @@ if st.button("Run Compliance Check", type="primary"):
         "⚠️ This tool does not provide legal advice. "
         "All data is mock data for demonstration purposes only."
     )
+st.divider()
+st.subheader("📂 Batch Assessment — Upload Student Records")
+st.markdown(
+    "For institutional use, upload a CSV file containing multiple student records to assess compliance in bulk")
+uploaded_file = st.file_uploader(
+    "Upload CSV file",
+    type="csv",
+    help="CSV must follow the StatusSafe data schema. "
+         "See docs/data_schema.md for field requirements."
+)
+if uploaded_file is not None:
+    import pandas as pd
+    import io
+    # Read csv 
+    df = pd.read_csv(uploaded_file)
+    st.markdown(f"**{len(df)} student record loaded.**")
+    # preview the uploaded data
+    with st.expander("📋 preview uploaded data", expanded=False):
+        st.dataframe(df)
+    if st.button("Run Batch Assessment", type = "primary"):
+        # convert dataframe rows to list of dictionaries for each student
+        rows = df.to_dict(orient="records")
+        # process batch
+        output = process_batch(rows) # defined in rules_engine.py
+        summary = output["summary"]
+        results = output["results"]
+        skipped = output["skipped"]
+
+        st.divider()
+
+        # Summary metrics
+        st.subheader("📊 Batch Summary")
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Total Evaluated", summary["total_evaluated"])
+        col2.metric("🔴 High Risk",    summary["red"])
+        col3.metric("🟡 Moderate Risk", summary["yellow"])
+        col4.metric("🟢 Compliant",    summary["green"])
+
+        if summary["skipped"] > 0:
+            st.warning(
+                f"⚠️ {summary['skipped']} records were skipped "
+                f"due to validation errors."
+            )
+
+        # Results table
+        st.subheader("📋 Student Results")
+
+        # Build display dataframe
+        display_rows = []
+        for r in results:
+            display_rows.append({
+                "Student ID":     r["student_id"],
+                "Status":         r["rule_evaluation"]["overall_status"],
+                "Triggered Rules": ", ".join(r["rule_evaluation"]["rule_results"]
+                                   and [x["rule_id"] for x in 
+                                   r["rule_evaluation"]["rule_results"]
+                                   if x["status"] == "Triggered"] or []) 
+                                   or "None"
+            })
+
+        display_df = pd.DataFrame(display_rows)
+        st.dataframe(display_df)
+
+        # Skipped records
+        if skipped:
+            with st.expander(
+                f"⚠️ Skipped Records ({len(skipped)})",
+                expanded=False
+            ):
+                for s in skipped:
+                    st.markdown(
+                        f"- **{s['student_id']}** — {s['validation_reason']}"
+                    )
+
+        st.caption(
+            "⚠️ This tool does not provide legal advice. "
+            "All results are for demonstration purposes only."
+        )
+
+
+

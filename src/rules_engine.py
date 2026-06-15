@@ -1,4 +1,4 @@
-
+import math
 from datetime import date
 from dataclasses import dataclass, asdict
 from typing import Any, Callable, Dict, List, Literal
@@ -144,8 +144,8 @@ def rule_003_opt_grace_period_nearing_expiration(student_record: Dict[str, Any])
     if "opt_end_date" not in student_record or \
         student_record["opt_end_date"] == "":
         return RuleResult(
-            rule_id="R001",
-            name="OPT ended without SEVIS update",
+            rule_id="R003",
+            name="OPT Grace Period Nearing Expiration",
             status="Pass",
             severity="Info",
             message="opt_end_date not provided — rule not applicable.",
@@ -378,22 +378,25 @@ def validate_csv_row(row: Dict[str, str]) -> Dict[str, Any]:
             "valid": False,
             "reason": "program_start_date cannot be in the future"
         }
+    
     # 4: validate opt date only if provided (opt_end_date is optional for students not on OPT)
     if "opt_end_date" in row and row["opt_end_date"] != "":
+        opt_val = row.get("opt_end_date", "")
+    if opt_val and not (isinstance(opt_val, float) 
+                        and math.isnan(opt_val)):
         try:
-            parsed["opt_end_date"] = parse_iso_date(str(row["opt_end_date"]), "opt_end_date")
+            parsed["opt_end_date"] = date.fromisoformat(str(opt_val))
         except ValueError:
             return {
                 "valid": False,
                 "reason": "opt_end_date must be in YYYY-MM-DD format"
-        }
-
-    if parsed["opt_end_date"] < parsed["program_start_date"]:
-        return {
-            "valid": False,
-            "reason": "opt_end_date cannot be before program_start_date"
-        }
-
+            }
+        if parsed["opt_end_date"] < parsed["program_start_date"]:
+            return {
+                "valid": False,
+                "reason": "opt_end_date cannot be before program_start_date"
+            }
+            
 
     # 5: enrollment status validation
     if row["enrollment_status"] not in valid_enrollment:
@@ -419,54 +422,66 @@ def validate_csv_row(row: Dict[str, str]) -> Dict[str, Any]:
 
     return {"valid": True, "reason": None}
 
-def process_batch(rows: List[Dict[str, str]]) -> List[Dict[str, Any]]:
+def process_batch(rows: List[Dict[str, str]]) -> Dict[str, Any]:
     """
-    Processes a batch of csv rows, validating each and evaluating rules for valid rows.
-    Returns a list of results with validation status and rule evaluation output.
-    invalid rows are skipped and flagged however the batch does not stop processing if invalid rows are encountered.
+    Processes a batch of CSV rows, validating each and
+    evaluating rules for valid rows.
+    Invalid rows are skipped and flagged — batch does not
+    stop processing if invalid rows are encountered.
     """
     valid_results = []
-    skipped_rows = []
+    skipped_rows  = []
 
     for row in rows:
-        # Step 1: validate row
-        validation = validate_csv_row(row)
 
+        # Step 1 — validate row
+        validation = validate_csv_row(row)
         if not validation["valid"]:
             skipped_rows.append({
-                "student_id": row.get("student_id", "unknown"),
+                "student_id":        row.get("student_id", "unknown"),
                 "validation_status": "Failed",
                 "validation_reason": validation["reason"],
-                "rule_evaluation": None
+                "rule_evaluation":   None
             })
             continue
-        
-        # Step 2: normalise boolean fields from string to actual boolean
-        row["full_time"] = row["full_time"].lower() == "true"
-        row["sevis_updated"] = row["sevis_updated"].lower() == "true"
 
-        # step 3: run the rules engine for valid rows and collect results
-        # If valid, evaluate rules
+        # Step 2 — normalise boolean fields
+        for bool_field in ["full_time", "sevis_updated"]:
+            val = row[bool_field]
+            if isinstance(val, str):
+                row[bool_field] = val.lower() == "true"
+            elif isinstance(val, bool):
+                pass
+            else:
+                row[bool_field] = bool(val)
+
+        # Step 3 — handle NaN then build student record
+        opt_val = row.get("opt_end_date", "")
+        if isinstance(opt_val, float) and math.isnan(opt_val):
+            opt_val = ""
+
         student_record = {
-            "student_id": row["student_id"],
-            "today": row["today"],
-            "enrollment_status": row["enrollment_status"],
-            "full_time": row["full_time"],
-            "program_level": row["program_level"],
+            "student_id":         row["student_id"],
+            "today":              row["today"],
+            "enrollment_status":  row["enrollment_status"],
+            "full_time":          row["full_time"],
+            "program_level":      row["program_level"],
             "program_start_date": row["program_start_date"],
-            "opt_end_date": row.get("opt_end_date", ""),
-            "sevis_updated": row["sevis_updated"],
+            "opt_end_date":       opt_val,
+            "sevis_updated":      row["sevis_updated"],
         }
 
         evaluation_output = evaluate_rules(student_record)
 
+        # ONE append only
         valid_results.append({
-            "student_id": row["student_id"],
+            "student_id":        row["student_id"],
             "validation_status": "Passed",
             "validation_reason": None,
-            "rule_evaluation": evaluation_output
+            "rule_evaluation":   evaluation_output
         })
-    # Step 4: compute summary statistics
+
+    # Step 4 — outside the loop
     total   = len(valid_results)
     red     = sum(1 for r in valid_results
                   if r["rule_evaluation"]["overall_status"] == "RED")
@@ -479,30 +494,16 @@ def process_batch(rows: List[Dict[str, str]]) -> List[Dict[str, Any]]:
     return {
         "summary": {
             "total_evaluated": total,
-            "red":     red,
-            "yellow":  yellow,
-            "green":   green,
-            "skipped": skipped
+            "red":             red,
+            "yellow":          yellow,
+            "green":           green,
+            "skipped":         skipped
         },
-        "results":  valid_results,
-        "skipped":  skipped_rows
+        "results": valid_results,
+        "skipped": skipped_rows
     }
     
 #####
-if __name__ == "__main__":
-    student_record = {
-        "student_id": "stu_smoke_001",
-        "today": "2026-01-14",
-        "enrollment_status": "enrolled",
-        "full_time": True,
-        "program_level": "graduate",
-        "program_start_date": "2025-08-26",
-        "opt_end_date": "2026-07-15",
-        "sevis_updated": False
-    }
-    output = evaluate_rules(student_record)
-    print_report(output)
-
 
 if __name__ == "__main__":
     # Valid row
