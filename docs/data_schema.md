@@ -96,7 +96,7 @@ A StudentRecord is **invalid** (Phase 1 must refuse to evaluate) if any of the f
 
 ## PHASE 2 
 ## Purpose 
-Phase 2 is an extension of Phase 1 to suppory institutional batch evaluation. A DSO submits a CSV file with multiple student records.
+Phase 2 is an extension of Phase 1 to support institutional batch evaluation. A DSO submits a CSV file with multiple student records.
 The engine evaluates each row independently using the same Phase 1 rules. 
 
 ## CSV requirements
@@ -110,7 +110,7 @@ The engine evaluates each row independently using the same Phase 1 rules.
 ---
 
 ## Batch validity rules
-- If a row fails Phase 1 hard failure rules, it is skipped and flagged in the output reports, and processing of the bacth continues.
+- If a row fails Phase 1 hard failure rules, it is skipped and flagged in the output reports, and processing of the rest of the batch continues.
 - The output report identifies every skipped row by student_id and reason for skipping
 - A batch with zero valid rows returns an error
 
