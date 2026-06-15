@@ -395,7 +395,6 @@ def validate_csv_row(row: Dict[str, str]) -> Dict[str, Any]:
         }
 
 
-    
     # 5: enrollment status validation
     if row["enrollment_status"] not in valid_enrollment:
         return {
@@ -419,6 +418,75 @@ def validate_csv_row(row: Dict[str, str]) -> Dict[str, Any]:
                 }
 
     return {"valid": True, "reason": None}
+
+def process_batch(rows: List[Dict[str, str]]) -> List[Dict[str, Any]]:
+    """
+    Processes a batch of csv rows, validating each and evaluating rules for valid rows.
+    Returns a list of results with validation status and rule evaluation output.
+    invalid rows are skipped and flagged however the batch does not stop processing if invalid rows are encountered.
+    """
+    valid_results = []
+    skipped_rows = []
+
+    for row in rows:
+        # Step 1: validate row
+        validation = validate_csv_row(row)
+
+        if not validation["valid"]:
+            skipped_rows.append({
+                "student_id": row.get("student_id", "unknown"),
+                "validation_status": "Failed",
+                "validation_reason": validation["reason"],
+                "rule_evaluation": None
+            })
+            continue
+        
+        # Step 2: normalise boolean fields from string to actual boolean
+        row["full_time"] = row["full_time"].lower() == "true"
+        row["sevis_updated"] = row["sevis_updated"].lower() == "true"
+
+        # step 3: run the rules engine for valid rows and collect results
+        # If valid, evaluate rules
+        student_record = {
+            "student_id": row["student_id"],
+            "today": row["today"],
+            "enrollment_status": row["enrollment_status"],
+            "full_time": row["full_time"],
+            "program_level": row["program_level"],
+            "program_start_date": row["program_start_date"],
+            "opt_end_date": row.get("opt_end_date", ""),
+            "sevis_updated": row["sevis_updated"],
+        }
+
+        evaluation_output = evaluate_rules(student_record)
+
+        valid_results.append({
+            "student_id": row["student_id"],
+            "validation_status": "Passed",
+            "validation_reason": None,
+            "rule_evaluation": evaluation_output
+        })
+    # Step 4: compute summary statistics
+    total   = len(valid_results)
+    red     = sum(1 for r in valid_results
+                  if r["rule_evaluation"]["overall_status"] == "RED")
+    yellow  = sum(1 for r in valid_results
+                  if r["rule_evaluation"]["overall_status"] == "YELLOW")
+    green   = sum(1 for r in valid_results
+                  if r["rule_evaluation"]["overall_status"] == "GREEN")
+    skipped = len(skipped_rows)
+
+    return {
+        "summary": {
+            "total_evaluated": total,
+            "red":     red,
+            "yellow":  yellow,
+            "green":   green,
+            "skipped": skipped
+        },
+        "results":  valid_results,
+        "skipped":  skipped_rows
+    }
     
 #####
 if __name__ == "__main__":
