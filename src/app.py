@@ -155,7 +155,100 @@ if st.button("Run Compliance Check", type="primary"):
         "⚠️ This tool does not provide legal advice. "
         "All data is mock data for demonstration purposes only."
     )
+
+
 st.divider()
+
+st.subheader("Check My own Status")
+st.markdown("Enter your own student information to assess your F-1 status compliance.")
+
+with st.form("student compliance form"):
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            today       = st.date_input("Today's date")
+            enroll      = st.selectbox(
+                            "Enrollment status",
+                            ["enrolled", "not_enrolled"]
+                        )
+            full_time   = st.checkbox("I am enrolled full time")
+            level       = st.selectbox(
+                            "Program level",
+                            ["graduate", "undergraduate"]
+                        )
+
+        with col2:
+            start_date  = st.date_input("Program start date")
+            on_opt      = st.checkbox("I am currently on OPT")
+            opt_end     = st.date_input(
+                            "OPT end date",
+                            value=None,
+                            disabled=not on_opt
+                        ) if on_opt else None
+            sevis       = st.checkbox("My SEVIS record has been updated")
+
+        submitted = st.form_submit_button(
+            "Check My Status",
+            type="primary"
+        )
+
+if submitted:
+    # Build student data dictionary from inputs
+    student_data = {
+        "student_id": "self_check",
+        "today": today.isoformat(),
+        "enrollment_status": enroll,
+        "full_time": full_time,
+        "program_level": level,
+        "program_start_date": start_date.isoformat(),
+        "on_opt": on_opt,
+        "opt_end_date": opt_end.isoformat() if opt_end else "",
+        "sevis_updated": sevis
+    }
+
+
+
+    result = evaluate_rules(student_data)
+    overall = result["overall_status"]
+    rules = result["rule_results"]
+
+    st.divider()
+
+     # Overall status banner
+    if overall == "RED":
+        st.error(f"🔴 Overall Status: HIGH RISK - Contact your DSO as soon as possible")
+    elif overall == "YELLOW":
+        st.warning(f"🟡 Overall Status: MODERATE RISK - Review your situation and contact your DSO if necessary")
+    else:
+        st.success(f"🟢 Overall Status: LOW RISK — Fully Compliant")
+    
+    # Triggered rules
+    triggered = [r for r in rules if r["status"] == "Triggered"]
+
+    if triggered:
+        st.subheader("⚠️ Issues Found")
+        for rule in triggered:
+            icon = "🔴" if rule["severity"] == "Critical" else "🟡"
+            with st.expander(
+                f"{icon} {rule['name']}",
+                expanded=True
+            ):
+                st.markdown(f"**Issue:** {rule['message']}")
+                st.markdown(
+                    f"**Recommended Action:** {rule['recommended_action']}"
+                )
+    else:
+        st.info("✅ No issues detected. Your F-1 status appears compliant.")
+
+    st.caption(
+        "⚠️ This tool does not provide legal advice. "
+        "Always confirm with your DSO before making "
+        "any immigration decisions."
+    )
+
+
+
 st.subheader("📂 Batch Assessment — Upload Student Records")
 st.markdown(
     "For institutional use, upload a CSV file containing multiple student records to assess compliance in bulk")
