@@ -2,11 +2,11 @@ import streamlit as st
 import json
 import os
 import sys
-from rules_engine import evaluate_rules, process_batch
+
 
 # Ensure src is on the path
 sys.path.insert(0, os.path.dirname(__file__))
-from rules_engine import evaluate_rules
+from rules_engine import evaluate_rules, process_batch
 
 # Page config 
 st.set_page_config(
@@ -202,12 +202,9 @@ if submitted:
         "full_time": full_time,
         "program_level": level,
         "program_start_date": start_date.isoformat(),
-        "on_opt": on_opt,
         "opt_end_date": opt_end.isoformat() if opt_end else "",
         "sevis_updated": sevis
     }
-
-
 
     result = evaluate_rules(student_data)
     overall = result["overall_status"]
@@ -270,62 +267,86 @@ if uploaded_file is not None:
     if st.button("Run Batch Assessment", type = "primary"):
         # convert dataframe rows to list of dictionaries for each student
         rows = df.to_dict(orient="records")
-        # process batch
-        output = process_batch(rows) # defined in rules_engine.py
-        summary = output["summary"]
-        results = output["results"]
-        skipped = output["skipped"]
+        output = process_batch(rows) # defined in rules_engine.py   
 
-        st.divider()
+        # store in-session so results persists
+        st.session_state["batch_output"] = output
+        st.session_state["batch_df"]     = pd.DataFrame([
+            {
+                "Student ID":       r["student_id"],
+                "Status":           r["rule_evaluation"]["overall_status"],
+                "Issues Found":     "\n".join([
+                                        x["name"] for x in
+                                        r["rule_evaluation"]["rule_results"]
+                                        if x["status"] == "Triggered"
+                                    ]) or "None",
+                "Actions Required": "\n".join([
+                                        x["recommended_action"] for x in
+                                        r["rule_evaluation"]["rule_results"]
+                                        if x["status"] == "Triggered"
+                                    ]) or "None"
+            }
+            for r in output["results"]
+    ])
+    # Display resulst outside button block so it shows after assessment is run/after download button is clicked.
+if "batch_output" in st.session_state:
+    # process batch
+    output = st.session_state["batch_output"]
+    summary = output["summary"]
+    results = output["results"]
+    skipped = output["skipped"]
+    display_df = st.session_state["batch_df"]
 
-        # Summary metrics
-        st.subheader("📊 Batch Summary")
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total Evaluated", summary["total_evaluated"])
-        col2.metric("🔴 High Risk",    summary["red"])
-        col3.metric("🟡 Moderate Risk", summary["yellow"])
-        col4.metric("🟢 Compliant",    summary["green"])
+    st.divider()
 
-        if summary["skipped"] > 0:
-            st.warning(
-                f"⚠️ {summary['skipped']} records were skipped "
-                f"due to validation errors."
-            )
 
-        # Results table
-        st.subheader("📋 Student Results")
 
-        # Build display dataframe
-        display_rows = []
-        for r in results:
-            display_rows.append({
-                "Student ID":     r["student_id"],
-                "Status":         r["rule_evaluation"]["overall_status"],
-                "Triggered Rules": ", ".join(r["rule_evaluation"]["rule_results"]
-                                   and [x["rule_id"] for x in 
-                                   r["rule_evaluation"]["rule_results"]
-                                   if x["status"] == "Triggered"] or []) 
-                                   or "None"
-            })
+    # Summary metrics
+    st.subheader("📊 Batch Summary")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total Evaluated", summary["total_evaluated"])
+    col2.metric("🔴 High Risk",    summary["red"])
+    col3.metric("🟡 Moderate Risk", summary["yellow"])
+    col4.metric("🟢 Compliant",    summary["green"])
 
-        display_df = pd.DataFrame(display_rows)
-        st.dataframe(display_df)
+    if summary["skipped"] > 0:
+        st.warning(
+            f"⚠️ {summary['skipped']} records were skipped "
+            f"due to validation errors."
+         )    
 
-        # Skipped records
-        if skipped:
-            with st.expander(
-                f"⚠️ Skipped Records ({len(skipped)})",
-                expanded=False
-            ):
-                for s in skipped:
-                    st.markdown(
-                        f"- **{s['student_id']}** — {s['validation_reason']}"
-                    )
+    # Results table
+    st.subheader("📋 Student Results")
+    st.dataframe(display_df)
 
-        st.caption(
-            "⚠️ This tool does not provide legal advice. "
-            "All results are for demonstration purposes only."
+    # Export button to download results as CSV
+    st.download_button(
+        label="📥 Download Results as CSV",
+        data=display_df.to_csv(index=False),
+        file_name="statussafe_batch_results.csv",
+        mime="text/csv"
         )
+
+
+    # Skipped records
+    if skipped:
+        with st.expander(
+            f"⚠️ Skipped Records ({len(skipped)})",
+            expanded=False
+        ):
+            for s in skipped:
+                st.markdown(
+                    f"- **{s['student_id']}** — {s['validation_reason']}"
+                )
+
+    st.caption(
+        "⚠️ This tool does not provide legal advice. "
+        "All results are for demonstration purposes only."
+    )
+        
+        
+
+    
 
 
 
