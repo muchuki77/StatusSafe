@@ -309,15 +309,32 @@ if "batch_output" in st.session_state:
     col3.metric("🟡 Moderate Risk", summary["yellow"])
     col4.metric("🟢 Compliant",    summary["green"])
 
+    # add a complainace rate
+    total = summary["total_evaluated"]
+    if total > 0:
+        compliance_rate = (summary["green"] / total) * 100
+        st.progress(
+            summary["green"] / total,
+            text=f"Compliance Rate: {compliance_rate:.1f}% of students fully compliant"
+        )
+
     if summary["skipped"] > 0:
         st.warning(
             f"⚠️ {summary['skipped']} records were skipped "
             f"due to validation errors."
-         )    
+         )
+
+
 
     # Results table
     st.subheader("📋 Student Results")
     st.dataframe(display_df)
+    # Sort risk by level; RED first then YELLOW then GREEN
+    risk_order = {"RED": 0, "YELLOW": 1, "GREEN": 2}
+    display_df["Risk Level"] = display_df["Status"].map(risk_order)
+    display_df = display_df.sort_values("Risk Level").drop(columns=["Risk Level"])  
+    display_df = display_df.reset_index(drop=True)
+
 
     # Export button to download results as CSV
     st.download_button(
