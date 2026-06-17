@@ -7,6 +7,7 @@ import sys
 # Ensure src is on the path
 sys.path.insert(0, os.path.dirname(__file__))
 from rules_engine import evaluate_rules, process_batch
+from datetime import datetime
 
 # Page config 
 st.set_page_config(
@@ -249,6 +250,8 @@ if submitted:
 st.subheader("📂 Batch Assessment — Upload Student Records")
 st.markdown(
     "For institutional use, upload a CSV file containing multiple student records to assess compliance in bulk")
+
+
 uploaded_file = st.file_uploader(
     "Upload CSV file",
     type="csv",
@@ -298,54 +301,86 @@ if "batch_output" in st.session_state:
     display_df = st.session_state["batch_df"]
 
     st.divider()
-
-
-
-    # Summary metrics
     st.subheader("📊 Batch Summary")
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Evaluated", summary["total_evaluated"])
-    col2.metric("🔴 High Risk",    summary["red"])
-    col3.metric("🟡 Moderate Risk", summary["yellow"])
-    col4.metric("🟢 Compliant",    summary["green"])
 
-    # add a complainace rate
-    total = summary["total_evaluated"]
+    # Timestamp
+    st.caption(
+        f"Batch processed on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+    # Colour coded metrics
+    total     = summary["total_evaluated"]
+    red_count = summary["red"]
+    yel_count = summary["yellow"]
+    grn_count = summary["green"]
+
+    st.markdown(f"""
+    <div style="display: flex; gap: 16px; margin: 16px 0;">
+        <div style="flex:1; background:#f8f9fa; border-left: 6px solid #6c757d;
+                    padding: 16px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2.2em; font-weight: bold;
+                        color: #2c3e50;">{total}</div>
+            <div style="font-size: 0.9em; color: #666;">Total Evaluated</div>
+        </div>
+        <div style="flex:1; background:#fff5f5; border-left: 6px solid #e74c3c;
+                    padding: 16px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2.2em; font-weight: bold;
+                        color: #e74c3c;">{red_count}</div>
+            <div style="font-size: 0.9em; color: #666;">🔴 High Risk</div>
+        </div>
+        <div style="flex:1; background:#fffbf0; border-left: 6px solid #f39c12;
+                    padding: 16px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2.2em; font-weight: bold;
+                        color: #f39c12;">{yel_count}</div>
+            <div style="font-size: 0.9em; color: #666;">🟡 Moderate Risk</div>
+        </div>
+        <div style="flex:1; background:#f0fff4; border-left: 6px solid #27ae60;
+                    padding: 16px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2.2em; font-weight: bold;
+                        color: #27ae60;">{grn_count}</div>
+            <div style="font-size: 0.9em; color: #666;">🟢 Compliant</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Split bar
     if total > 0:
-        compliance_rate = (summary["green"] / total) * 100
-        st.progress(
-            summary["green"] / total,
-            text=f"Compliance Rate: {compliance_rate:.1f}% of students fully compliant"
-        )
+        compliant_bar     = round((grn_count / total) * 100)
+        non_compliant_bar = 100 - compliant_bar
 
+        st.markdown(f"""
+        <div style="margin: 8px 0 4px 0;">
+            <div style="display: flex; justify-content: space-between;
+                        font-size: 0.85em; color: #666; margin-bottom: 4px;">
+                <span>🟢 Compliant {compliant_bar}%</span>
+                <span>🔴 Non-Compliant {non_compliant_bar}%</span>
+            </div>
+            <div style="display: flex; height: 20px; border-radius: 10px;
+                        overflow: hidden; background: #eee;">
+                <div style="width: {compliant_bar}%; 
+                            background: #27ae60;"></div>
+                <div style="width: {non_compliant_bar}%; 
+                            background: #e74c3c;"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
     if summary["skipped"] > 0:
         st.warning(
-            f"⚠️ {summary['skipped']} records were skipped "
+            f"⚠️ {summary['skipped']} records skipped "
             f"due to validation errors."
-         )
-
-
+        )
 
     # Results table
     st.subheader("📋 Student Results")
     st.dataframe(display_df)
-    # Sort risk by level; RED first then YELLOW then GREEN
-    risk_order = {"RED": 0, "YELLOW": 1, "GREEN": 2}
-    display_df["Risk Level"] = display_df["Status"].map(risk_order)
-    display_df = display_df.sort_values("Risk Level").drop(columns=["Risk Level"])  
-    display_df = display_df.reset_index(drop=True)
 
-
-    # Export button to download results as CSV
     st.download_button(
         label="📥 Download Results as CSV",
         data=display_df.to_csv(index=False),
         file_name="statussafe_batch_results.csv",
         mime="text/csv"
-        )
+    )
 
-
-    # Skipped records
     if skipped:
         with st.expander(
             f"⚠️ Skipped Records ({len(skipped)})",
@@ -360,6 +395,8 @@ if "batch_output" in st.session_state:
         "⚠️ This tool does not provide legal advice. "
         "All results are for demonstration purposes only."
     )
+
+
         
         
 
