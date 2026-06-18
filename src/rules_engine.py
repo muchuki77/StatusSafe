@@ -378,12 +378,23 @@ def validate_csv_row(row: Dict[str, str]) -> Dict[str, Any]:
             "valid": False,
             "reason": "program_start_date cannot be in the future"
         }
+    # 3 (b): today cannot be in the future
+    if parsed["today"] > date.today():
+        return {
+            "valid": False,
+            "reason": "today cannot be in the future"
+        }
     
     # 4: validate opt date only if provided (opt_end_date is optional for students not on OPT)
-    if "opt_end_date" in row and row["opt_end_date"] != "":
-        opt_val = row.get("opt_end_date", "")
-    if opt_val and not (isinstance(opt_val, float) 
-                        and math.isnan(opt_val)):
+    opt_val = row.get("opt_end_date", "")
+
+    # treat pandas NaN as empty string for optional opt_end_date
+    if isinstance(opt_val, float) and math.isnan(opt_val):
+        # convert nan to empty string
+        opt_val = "" 
+
+    # validate if opt_end_date provided
+    if opt_val != "":
         try:
             parsed["opt_end_date"] = date.fromisoformat(str(opt_val))
         except ValueError:
@@ -399,17 +410,21 @@ def validate_csv_row(row: Dict[str, str]) -> Dict[str, Any]:
             
 
     # 5: enrollment status validation
-    if row["enrollment_status"] not in valid_enrollment:
+    enrollment_val = str(row["enrollment_status"]).lower().strip()
+    if enrollment_val not in valid_enrollment:
         return {
             "valid": False,
             "reason": f"enrollment_status must be one of {valid_enrollment}"
         }
+    
     # 6: program level validation
-    if row["program_level"] not in valid_program:
+    program_val = str(row["program_level"]).lower().strip()
+    if program_val not in valid_program:
         return {
             "valid": False,
             "reason": f"program_level must be one of {valid_program}"
         }
+    
     # 7: Boolean fields validation
     for bool_field in ["full_time", "sevis_updated"]:
         val = row[bool_field]
@@ -454,6 +469,8 @@ def process_batch(rows: List[Dict[str, str]]) -> Dict[str, Any]:
                 pass
             else:
                 row[bool_field] = bool(val)
+        row["enrollment_status"] = row["enrollment_status"].lower().strip()
+        row["program_level"] = row["program_level"].lower().strip()
 
         # Step 3 — handle NaN then build student record
         opt_val = row.get("opt_end_date", "")
