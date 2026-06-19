@@ -110,7 +110,7 @@ The engine evaluates each row independently using the same Phase 1 rules.
 ---
 
 ## Batch validity rules
-- If a row fails Phase 1 hard failure rules, it is skipped and flagged in the output reports, and processing of the rest of the batch continues.
+- If a row fails Phase 1 hard failure rules, it is skipped and flagged in the output reports, and processing of the rest of the batch continues. Processing is not halted.
 - The output report identifies every skipped row by student_id and reason for skipping
 - A batch with zero valid rows returns an error
 
