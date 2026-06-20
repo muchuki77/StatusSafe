@@ -97,8 +97,8 @@ cases appear at the top.
 
 **🟢 GREEN — Compliant**
 
-No compliance issues detected based on the information provided. 
-No immediate action required.
+- No compliance issues detected based on the information provided. 
+- No immediate action required.
 
 ---
 
