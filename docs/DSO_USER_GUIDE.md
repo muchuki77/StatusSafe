@@ -144,8 +144,7 @@ The tool will return an immediate risk assessment with specific issues and recom
 
 ## Disclaimer
 
-StatusSafe does not provide legal advice and does not interact with real SEVIS or student data. All results are for decision-support purposes only. Always confirm 
-findings with your institution's official records and consult qualified immigration counsel when appropriate.
+StatusSafe does not provide legal advice and does not interact with real SEVIS or student data. All results are for decision-support purposes only. Always confirm findings with your institution's official records and consult qualified immigration counsel when appropriate.
 
 ---
 
