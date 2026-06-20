@@ -91,13 +91,21 @@ python -m streamlit run src/app.py
 StatusSafe/
 
 docs/           — documentation and schema
+
 samples/        — mock student profiles for testing
+
 src/
+
 app.py        — Streamlit interface
+
 rules_engine.py — compliance rules and batch processing
+
 tests/          — verification and edge case test scripts
+
 requirements.txt
+
 LICENSE
+
 README.md
 
 ---
