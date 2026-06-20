@@ -113,6 +113,7 @@ README.md
 ## Disclaimer
 
 This tool does not provide legal advice. It does not interact with real SEVIS data or student records. All profiles and results are for demonstration and educational purposes only. 
+
 Always consult your Designated School Official (DSO) for immigration guidance.
 
 ---
