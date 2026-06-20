@@ -120,9 +120,10 @@ Always consult your Designated School Official (DSO) for immigration guidance.
 ## Author
 
 Maryanne Muchuki
+
 Built: 2026
-Inspired by personal experience navigating F-1 status 
-reinstatement.
+
+Inspired by personal experience navigating F-1 status reinstatement.
 
 ---
 
