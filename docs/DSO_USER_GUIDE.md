@@ -85,16 +85,19 @@ cases appear at the top.
 ### Step 4 — Interpret The Risk Levels
 
 **🔴 RED — High Risk**
-A critical compliance issue was detected. The student's record shows a condition that may indicate an F-1 status violation. 
-Contact this student as soon as possible to review their SEVIS record and confirm their status.
+
+- A critical compliance issue was detected.
+- The student's record shows a condition that may indicate an F-1 status violation. 
+- Contact this student as soon as possible to review their SEVIS record and confirm their status.
 
 **🟡 YELLOW — Moderate Risk**
-A potential compliance issue was detected that requires attention before it escalates. 
-Review the student's situation and confirm whether corrective action is needed.
+
+- A potential compliance issue was detected that requires attention before it escalates.
+- Review the student's situation and confirm whether corrective action is needed.
 
 **🟢 GREEN — Compliant**
-No compliance issues detected based on the information provided. 
 
+No compliance issues detected based on the information provided. 
 No immediate action required.
 
 ---
