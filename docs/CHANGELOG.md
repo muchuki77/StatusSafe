@@ -72,6 +72,15 @@ All notable changes to StatusSafe are documented here.
 - Optional student name and email fields for DSO workflow
 - Urgency indicators for RED students — days since expiry
 
+## Phase 3 - in progress
+
+### Planned
+- SQLite database storage layer - schema designed 
+- Four tables: Assessments, batches, rule_triggers & resolutions
+- Five analytics queries designed and documented
+- Phase 3 scope document complete -> docs/PHASE3_SCOPE.md
+- Database schema file designed and complete -> docs/database_schema.sql
+
 ## Planned — Phase 4
 
 - Synthetic data generation using rules engine as labeler
