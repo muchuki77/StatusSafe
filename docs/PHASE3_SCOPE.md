@@ -5,7 +5,7 @@
 ## Goal
 Transform StatusSafe from a point-in-time detector into an institutional compliance management system with memory, analytics, and predictive intelligence.
 
-**Phase 2 tells you whats currently wrong while Pahse 3 tells you whats been wrong, how wrong and what is likely to go wrong**
+**Phase 2 tells you whats currently wrong while Phase 3 tells you whats been wrong, how wrong and what is likely to go wrong**
 
 ## Process Metrics
 - Average resolution time per rule type: Time a DSO takes to resolve a RED flag
