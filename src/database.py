@@ -162,8 +162,91 @@ def save_batch_results (output: dict, assessed_by: str = "DSO") -> str:
     conn.commit()
     conn.close()
     return batch_id
-              
-                       
-                    
-                    
-                       
+
+
+def get_batch_history() -> list:
+    """
+    Retrieve all past batch assessments  in order of the most recent first.
+    Returns a list of dictionaries, one per batch.
+    
+    """
+    if not os.path.exists(DB_PATH):
+        return []
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+                   SELECT
+                   batch_id,
+                   assessed_by,
+                   assessed_at,
+                   total_records,
+                   red_count,
+                   yellow_count,
+                   green_count,
+                   skipped_count
+                FROM batches
+                ORDER BY assessed_at DESC""")
+
+    rows = cursor.fetchall()
+    conn.close()    
+
+    return [dict(row) for row in rows]
+
+
+def get_most_common_rules() -> list:
+    """
+    Returns triggered rules ranked by frequency across all batches.
+    """
+    if not os.path.exists(DB_PATH):
+        return []
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 
+            rule_id,
+            rule_name,
+            COUNT(*) as frequency
+        FROM rule_triggers
+        GROUP BY rule_id, rule_name
+        ORDER BY frequency DESC
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [dict(row) for row in rows]
+
+def get_repeat_alerts() -> list:
+    """
+    Returns students who have been flagged RED more than once.
+    """
+    if not os.path.exists(DB_PATH):
+        return []
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 
+            student_id,
+            COUNT(*) as alert_count,
+            MAX(assessed_at) as last_flagged
+        FROM assessments
+        WHERE overall_status = 'RED'
+        GROUP BY student_id
+        HAVING alert_count > 1
+        ORDER BY alert_count DESC
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [dict(row) for row in rows]
+
+                
