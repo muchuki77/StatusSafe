@@ -439,10 +439,8 @@ def validate_csv_row(row: Dict[str, str]) -> Dict[str, Any]:
 
 def process_batch(rows: List[Dict[str, str]]) -> Dict[str, Any]:
     """
-    Processes a batch of CSV rows, validating each and
-    evaluating rules for valid rows.
-    Invalid rows are skipped and flagged — batch does not
-    stop processing if invalid rows are encountered.
+    Processes a batch of CSV rows, validating each and evaluating rules for valid rows.
+    Invalid rows are skipped and flagged; batch does not stop processing if invalid rows are encountered.
     """
     valid_results = []
     skipped_rows  = []
