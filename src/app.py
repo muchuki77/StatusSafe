@@ -272,6 +272,15 @@ if uploaded_file is not None:
         rows = df.to_dict(orient="records")
         output = process_batch(rows) # defined in rules_engine.py   
 
+        from database import init_database, save_batch_results
+        init_database() # ensure database is initialised
+        batch_id = save_batch_results(output, assessed_by="DSO") # save results to database
+
+        st.session_state["batch_output"] = output
+        st.session_state["batch_df"] = pd.DataFrame([])
+        st.session_state["batch_id"] = batch_id # batch id stored in session state for reference
+
+
         # store in-session so results persists
         st.session_state["batch_output"] = output
         st.session_state["batch_df"]     = pd.DataFrame([
@@ -291,7 +300,7 @@ if uploaded_file is not None:
             }
             for r in output["results"]
     ])
-    # Display resulst outside button block so it shows after assessment is run/after download button is clicked.
+    # Display results outside button block so it shows after assessment is run/after download button is clicked.
 if "batch_output" in st.session_state:
     # process batch
     output = st.session_state["batch_output"]
@@ -307,6 +316,11 @@ if "batch_output" in st.session_state:
     st.caption(
         f"Batch processed on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     )
+    # lets let the DSO know that tthe assessment results have been saved to the database
+    if "batch_id" in st.session_state:
+        st.caption(
+            f"Assessment ID: {st.session_state['batch_id']} — results saved to database"
+        )
     # Colour coded metrics
     total     = summary["total_evaluated"]
     red_count = summary["red"]
