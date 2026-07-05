@@ -2,7 +2,14 @@ import streamlit as st
 import json
 import os
 import sys
-
+import pandas as pd
+from database import (
+    init_database,
+    save_batch_results,
+    get_batch_history,
+    get_most_common_rules,
+    get_repeat_alerts
+)
 
 # Ensure src is on the path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -410,9 +417,62 @@ if "batch_output" in st.session_state:
         "All results are for demonstration purposes only."
     )
 
+# add an analytics section to the app to show batch history, most common rules, and repeat alerts        
+st.divider()
+st.subheader("📊 Compliance Analytics")
+st.markdown("Historical compliance data from previous batch assessments.")
 
-        
-        
+history = get_batch_history()
+common_rules = get_most_common_rules()
+repeats = get_repeat_alerts()
+
+if not history:
+    st.info(
+        "No batch history found. Run a batch assessment to generate "
+        "compliance data."
+    )
+else:
+    # batch history
+    st.markdown("**📋 Assessment History**")
+    history_df = pd.DataFrame(history)
+    history_df = history_df.rename(columns={
+        "batch_id":      "Batch ID",
+        "assessed_by":   "Assessed By",
+        "assessed_at":   "Date",
+        "total_records": "Total",
+        "red_count":     "🔴 RED",
+        "yellow_count":  "🟡 YELLOW",
+        "green_count":   "🟢 GREEN",
+        "skipped_count": "Skipped"
+    })
+    st.dataframe(history_df)
+st.divider()
+if  common_rules:
+    st.markdown("**⚠️ Most Triggered Rules**")
+    rules_df = pd.DataFrame(common_rules)
+    rules_df = rules_df.rename(columns={
+        "rule_id":    "Rule ID",
+        "rule_name":  "Rule Name",
+        "frequency":  "Times Triggered"
+    })
+    st.dataframe(rules_df)
+st.divider()
+
+# repeat alerts
+if repeats:
+    st.markdown("**🔁 Repeat Alerts - Students flagged multiple times**")
+    repeats_df = pd.DataFrame(repeats)
+    repeats_df = repeats_df.rename(columns={
+        "student_id":  "Student ID",
+        "alert_count": "Times Flagged"
+    })
+    st.dataframe(repeats_df)
+else:
+    st.info(
+        "✅ No repeat alerts found. " 
+        "No students have been flagged RED more than once."
+    )
+st.caption("Analytics update automatically after each batch assessment.")
 
     
 
