@@ -252,7 +252,7 @@ if submitted:
         "any immigration decisions."
     )
 
-
+st.divider()
 
 st.subheader("📂 Batch Assessment — Upload Student Records")
 st.markdown(

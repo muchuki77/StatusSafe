@@ -48,6 +48,32 @@ CREATE TABLE resolutions (
     - System records time stamp for every resolution
     - Resolved student are removed from active alert list
 
+    ## Resolution Tracking UI — Implementation Notes
+
+            ### User Story
+            DSO runs batch, flags RED students, marks resolved ones
+            so repeat alerts only show outstanding issues.
+
+            ### UI Approach
+            Phase 3: inline form below repeat alerts table
+            Phase 4: expandable row in results table
+
+            ### Form Fields
+            - Student ID (pre-filled)
+            - Rule ID (dropdown from triggered rules)
+            - Resolved by (DSO name)
+            - Notes (free text)
+            - Resolved at (auto timestamp)
+
+            ### Database Functions Needed
+            - save_resolution()
+            - get_resolutions()
+            - Update get_repeat_alerts() to exclude resolved students
+
+            ### Query Update
+            LEFT JOIN resolutions WHERE r.id IS NULL
+            filters out already-resolved students from repeat alerts
+
 - Department field in data schema
     - Add optional 'department' field to data shemma
     student_id, today, enrollment_status, full_time, program_level, program_start_date, opt_end_date, sevis_updated, department
