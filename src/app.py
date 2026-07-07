@@ -4,6 +4,12 @@ import os
 import sys
 import pandas as pd
 import sqlite3
+from datetime import datetime
+
+# Ensure src is on the path
+sys.path.insert(0, os.path.dirname(__file__))
+
+from rules_engine import evaluate_rules, process_batch
 from database import (
     init_database,
     save_batch_results,
@@ -14,10 +20,6 @@ from database import (
     get_resolutions
 )
 
-# Ensure src is on the path
-sys.path.insert(0, os.path.dirname(__file__))
-from rules_engine import evaluate_rules, process_batch
-from datetime import datetime
 
 # Page config 
 st.set_page_config(
