@@ -195,6 +195,7 @@ def get_batch_history() -> list:
     return [dict(row) for row in rows]
 
 
+
 def get_most_common_rules() -> list:
     """
     Returns triggered rules ranked by frequency across all batches.
@@ -221,9 +222,12 @@ def get_most_common_rules() -> list:
 
     return [dict(row) for row in rows]
 
+
+# get_repeat_alerts in database.py
 def get_repeat_alerts() -> list:
     """
     Returns students who have been flagged RED more than once.
+    These are students who have not been fully resolved and may require further attention.
     """
     if not os.path.exists(DB_PATH):
         return []
@@ -234,19 +238,90 @@ def get_repeat_alerts() -> list:
 
     cursor.execute("""
         SELECT 
-            student_id,
+            a.student_id,
             COUNT(*) as alert_count,
             MAX(assessed_at) as last_flagged
-        FROM assessments
-        WHERE overall_status = 'RED'
-        GROUP BY student_id
+        FROM assessments a
+        LEFT JOIN resolutions r ON a.student_id = r.student_id 
+        WHERE a.overall_status = 'RED' AND r.student_id IS NULL
+        GROUP BY a.student_id
         HAVING alert_count > 1
         ORDER BY alert_count DESC
     """)
 
     rows = cursor.fetchall()
     conn.close()
+    return [dict(row) for row in rows]
 
+# save_resolution in database.py
+def save_resolution(student_id: str, 
+                    rule_id: str, 
+                    assessment_id: int, 
+                    resolved_by: str, 
+                    notes: str = None) -> bool:
+    """
+    Save a resolution for a triggered rule in the database.
+    Returns True if the resolution was saved successfully, False otherwise.
+    """
+    if not os.path.exists(DB_PATH):
+        return False
+
+    resolved_at = datetime.now().isoformat()
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO resolutions (
+                   student_id,
+                   rule_id,
+                   assessment_id,
+                   resolved_by,
+                   resolved_at,
+                   notes)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """,
+    (student_id, 
+     rule_id, 
+     assessment_id, 
+     resolved_by, 
+     resolved_at, 
+     notes))
+
+    conn.commit()
+    conn.close()
+    return True
+
+# get_resolutions in database.py
+def get_resolutions(student_id: str = None, rule_id: str = None) -> list:
+    """
+    Retrieve resolutions from the database order by most recent first.
+    """
+    if not os.path.exists(DB_PATH):
+        return []
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 
+            r.id,
+            r.student_id,
+            r.rule_id,
+            r.assessment_id,
+            r.resolved_by,
+            r.resolved_at,
+            r.notes,
+            a.overall_status,
+            a.batch_id    
+        FROM resolutions r
+        JOIN assessments a ON r.assessment_id = a.id
+        ORDER BY resolved_at DESC
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
     return [dict(row) for row in rows]
 
                 

@@ -48,7 +48,7 @@ CREATE TABLE resolutions (
     - System records time stamp for every resolution
     - Resolved student are removed from active alert list
 
-    ## Resolution Tracking UI — Implementation Notes
+    ## Resolution Tracking UI -> Implementation Notes
 
             ### User Story
             DSO runs batch, flags RED students, marks resolved ones
@@ -82,7 +82,7 @@ CREATE TABLE resolutions (
 - Historical assessment aggregation
     - Store every assesment result with timestamp. how about individual student?
     - Query across time to identify patterns
-    - Compare currrnt batch across historical baseline
+    - Compare current batch across historical baseline
     - Flag students who's status has not improved
 
 ## ML Intelligence Layer
@@ -155,3 +155,4 @@ Phase 3 ML intelligence layer requires completion of:
 The synthetic data generation strategy uses the existing rules engine as a labeler — generate student profiles, run them through the rules engine, use the output as training labels. This avoids the need for real student data while producing a realistic training set.
 
 See docs/ASSUMPTIONS.md for open questions on postdoctoral F-1 students and department field design.
+

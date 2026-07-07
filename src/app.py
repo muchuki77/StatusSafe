@@ -3,12 +3,15 @@ import json
 import os
 import sys
 import pandas as pd
+import sqlite3
 from database import (
     init_database,
     save_batch_results,
     get_batch_history,
     get_most_common_rules,
-    get_repeat_alerts
+    get_repeat_alerts,
+    save_resolution,
+    get_resolutions
 )
 
 # Ensure src is on the path
@@ -445,7 +448,25 @@ else:
         "green_count":   "🟢 GREEN",
         "skipped_count": "Skipped"
     })
-    st.dataframe(history_df)
+    resolutions = get_resolutions()
+    if resolutions:
+        resolutions_df = pd.DataFrame(resolutions)
+        resolutions_df = resolutions_df.rename(columns={
+            "student_id":    "Student ID",
+            "rule_id":       "Rule ID",
+            "assessment_id": "Assessment ID",
+            "resolved_by":   "Resolved By",
+            "resolved_at":   "Resolved At",
+            "notes":         "Notes",
+            "overall_status": "Status", 
+            "batch_id":      "Batch ID"
+        })
+        
+        st.dataframe(resolutions_df[["Student ID", "Rule ID", "Assessment ID", "Resolved By", "Resolved At", "Notes", "Status", "Batch ID"]])
+    else:
+        st.info("No resolutions found. Students flagged in previous batches have not been marked as resolved.")
+
+
 st.divider()
 if  common_rules:
     st.markdown("**⚠️ Most Triggered Rules**")
@@ -459,14 +480,95 @@ if  common_rules:
 st.divider()
 
 # repeat alerts
+st.markdown("**🔁 Repeat Alerts; Students flagged multiple times**")
 if repeats:
-    st.markdown("**🔁 Repeat Alerts - Students flagged multiple times**")
     repeats_df = pd.DataFrame(repeats)
     repeats_df = repeats_df.rename(columns={
         "student_id":  "Student ID",
-        "alert_count": "Times Flagged"
+        "alert_count": "Times Flagged",
+        "last_flagged": "Last Flagged Date"
     })
     st.dataframe(repeats_df)
+
+# resolution form
+st.markdown("✅ Mark student as resolved")
+st.markdown("Use this form to mark a student as resolved, which will remove them from the repeat alerts list.")
+with st.form("resolution_form"):
+        col1, col2 = st.columns(2)
+
+        with col1:
+            student_options = [
+                r["student_id"] for r in repeats
+            ]
+            selected_student = st.selectbox(
+                "Student ID",
+                student_options
+            )
+            rule_options = ["R001", "R002", "R003", "R004"]
+            selected_rule = st.selectbox(
+                "Rule resolved",
+                rule_options
+            )
+
+        with col2:
+            resolved_by = st.text_input(
+                "Your name or DSO ID",
+                placeholder="e.g. DSO_Jane"
+            )
+            notes = st.text_area(
+                "Action taken",
+                placeholder="e.g. Student contacted, SEVIS updated on 2026-07-05",
+                height=100
+            )
+
+        resolve_submitted = st.form_submit_button(
+            "Mark as Resolved",
+            type="primary"
+        )
+
+if resolve_submitted:
+        if not resolved_by.strip():
+            st.error("Please enter your name or DSO ID.")
+        elif not notes.strip():
+            st.error("Please describe the action taken.")
+        else:
+            # Get the assessment_id for this student
+            conn_temp = sqlite3.connect(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    '..', 'data', 'statussafe.db'
+                )
+            )
+            cursor_temp = conn_temp.cursor()
+            cursor_temp.execute("""
+                SELECT id FROM assessments
+                WHERE student_id = ?
+                AND overall_status = 'RED'
+                ORDER BY assessed_at DESC
+                LIMIT 1
+            """, (selected_student,))
+            row = cursor_temp.fetchone()
+            conn_temp.close()
+
+            if row:
+                success = save_resolution(
+                    student_id=selected_student,
+                    rule_id=selected_rule,
+                    assessment_id=row[0],
+                    resolved_by=resolved_by.strip(),
+                    notes=notes.strip()
+                )
+                if success:
+                    st.success(
+                        f"✅ {selected_student} marked as resolved. "
+                        f"They will be removed from repeat alerts."
+                    )
+                    st.rerun()
+                else:
+                    st.error("Failed to save resolution. Try again.")
+            else:
+                st.error("Could not find assessment record for this student.")
+
 else:
     st.info(
         "✅ No repeat alerts found. " 
@@ -475,6 +577,6 @@ else:
 st.caption("Analytics update automatically after each batch assessment.")
 
     
-
+# 
 
 
