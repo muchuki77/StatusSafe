@@ -64,6 +64,10 @@ Each student record requires these fields:
 
 See `docs/data_schema.md` for full documentation.
 
+## Note on analytics
+The Compliance analytics sesction requires a local database to display historical assessments. 
+On the live demo, at statusafe.streamlit.app, run a batch assessment first to populate the analytics dashboard. 
+
 ---
 
 ## How To Run Locally
