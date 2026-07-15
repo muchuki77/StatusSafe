@@ -115,6 +115,13 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "✅ Resolution Tracking"
 ])  
 
+RULE_NAMES = {
+    "R001": "OPT ended without SEVIS update",
+    "R002": "Enrollment without SEVIS update",
+    "R003": "OPT grace period nearing expiration",
+    "R004": "Under-enrollment while on F-1"
+}
+
 
 ## TAB 1 -> STUDENT CHECK
 with tab1:
@@ -530,7 +537,7 @@ with tab4:
                 selected_student = st.selectbox(
                     "Student ID", student_options
                 )
-                rule_options  = ["R001", "R002", "R003", "R004"]
+                rule_options  = list(RULE_NAMES.keys())
                 selected_rule = st.selectbox("Rule resolved", rule_options)
 
             with col2:
@@ -605,6 +612,8 @@ with tab4:
 
     if resolutions:
         res_df = pd.DataFrame(resolutions)
+        res_df["rule_id"] = res_df["rule_id"].map(RULE_NAMES).fillna(res_df["rule_id"])
+        res_df["resolved_at"] = pd.to_datetime(res_df["resolved_at"],format="mixed").dt.strftime('%b %d, %Y at %H:%M')
         res_df = res_df.rename(columns={
             "student_id":  "Student ID",
             "rule_id":     "Rule",
