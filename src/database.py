@@ -90,8 +90,8 @@ def save_batch_results (output: dict, assessed_by: str = "DSO") -> str:
     """
 
     # generate a unique batch_id for the assessment with a timestamp
-    batch_id = f"batch_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-    assessed_at = datetime.now().isoformat()
+    batch_id = f"batch_{datetime.now().strftime('%Y%m%d %H%M%S')}"
+    assessed_at = datetime.now().strftime('%Y-%m-%d  %H:%M')
 
     summary = output['summary']
     results  = output['results']
