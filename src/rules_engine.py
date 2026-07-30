@@ -1,3 +1,4 @@
+
 import math
 from datetime import date
 from dataclasses import dataclass, asdict
@@ -166,7 +167,7 @@ def rule_003_opt_grace_period_nearing_expiration(student_record: Dict[str, Any])
             name="OPT Grace Period Nearing Expiration",
             status="Triggered",
             severity="Warning", # Risk level: YELLOW
-            message="OPT grace period nearing expiration without SEVIS update.",
+            message="OPT grace period nearing expiration without SEVIS update",
             recommended_action="Review transition timeline and confirm next academic steps.",
             evidence={
                 "today": student_record["today"],
@@ -226,45 +227,37 @@ def rule_004_under_enrollment_while_on_f1(student_record: Dict[str, Any]) -> Rul
         },
     )
 
-#####
-#Rule 5: No issues detected
+##Rule 5: No issues detected
 #*** Risk level** GREEN Student is fully enrolled, has maintained F1 status with sevis record active and updated.
-def rule_005_no_issues_detected(student_record: Dict[str, Any]) -> RuleResult:
-    enrollment_status = student_record["enrollment_status"]
-    full_time = student_record["full_time"]
-    sevis_updated = student_record["sevis_updated"]
-
-    triggered = not (enrollment_status == "enrolled" and full_time is True and sevis_updated is True)
-
-    if triggered:
+def rule_005_no_issues_detected(results: list[RuleResult]) -> RuleResult:
+    no_issues_detected = all(r.status == "Pass" for r in results)
+    if not no_issues_detected:
         return RuleResult(
             rule_id="R005",
-            name="No Issues Detected",
+            name="Student is not fully compliant",
             status="Pass",
-            severity="Info", # Risk level: GREEN
-            message="Student is fully enrolled, has maintained F1 status with SEVIS record active and updated.",
-            recommended_action="No action needed.",
+            severity="Info",
+            message="One or more of the compliance rules have been triggered. See details above!",
+            recommended_action="Investigative action needed",
             evidence={
-                "enrollment_status": enrollment_status,
-                "full_time": full_time,
-                "sevis_updated": sevis_updated,   
-            },
+                "status": "Pass"
+            }
         )
-    return RuleResult(
-        rule_id="R005",
-        name="No Issues Detected",
-        status="Pass",
-        severity="Info",
-        message="Some conditions for full compliance were not met",
-        recommended_action="Review other triggered rules above",
-        evidence={
-            "enrollment_status": enrollment_status,
-            "full_time": full_time,
-            "sevis_updated": sevis_updated,   
-        },
-    )
-
-
+    else:
+        return RuleResult (
+            rule_id="R005",
+            name="No issues detected with with previous rules",
+            status="Pass",
+            severity="Info",
+            message="Student fully compliant",
+            recommended_action="No action needed",
+            evidence={
+                "status": "Pass",
+                "message":"No issues detected"
+            }
+                
+            )
+    
 def compute_overall_status(results: list[RuleResult]) -> str:
     for result in results:
         if result.status == "Triggered" and result.severity == "Critical":
@@ -279,22 +272,25 @@ def evaluate_rules(student_record: Dict[str, Any]) -> Dict[str, Any]:
     """
     Minimal phase 1 rule engine assumes that student record conforms to data_schema.md.
     """
-
-    rules: List[Callable[[Dict[str, Any]], RuleResult]] = [
-        rule_001_opt_ended_without_sevis_update,
-        rule_002_enrollment_without_sevis_program_extension_update,
-        rule_003_opt_grace_period_nearing_expiration,
-        rule_004_under_enrollment_while_on_f1,
-        rule_005_no_issues_detected,
-        ]
-    results = [rule(student_record)for rule in rules]
-    overall = compute_overall_status(results)
-
+    rules_needing_record = [
+    rule_001_opt_ended_without_sevis_update,
+    rule_002_enrollment_without_sevis_program_extension_update,
+    rule_003_opt_grace_period_nearing_expiration,
+    rule_004_under_enrollment_while_on_f1
+    ]
+    
+    # create a list of rule 1 - 4 
+    results = [rule(student_record) for rule in rules_needing_record]
+    # call rule 005 by itself
+    r005_result = rule_005_no_issues_detected(results)
+    final_results = [*results, r005_result]
+    overall = compute_overall_status(final_results)
 
     return {
         "overall_status": overall,
-        "rule_results": [result.to_dict() for result in results],
+        "rule_results": [result.to_dict() for result in final_results],
     }
+
 
 #####
 def print_report(output: Dict[str, Any]) -> None:

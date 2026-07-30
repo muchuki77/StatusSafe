@@ -8,7 +8,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, PROJECT_ROOT)
 sys.path.insert(0, os.path.join(PROJECT_ROOT, 'src'))
 
-from rules_engine import validate_csv_row, process_batch
+from rules_engine import validate_csv_row, process_batch, evaluate_rules, compute_overall_status
 
 print("\n" + "=" * 55)
 print("  STATUSSAFE — EDGE CASE TESTS")
@@ -181,6 +181,109 @@ check("500 rows all processed",
 check("500 rows all GREEN",
       output["summary"]["green"] == 500)
 
+
+# Test 11: R005 report of full compliance when all R001 - R004 pass
+print("\n Test all four rules pass!")
+student_rec = {
+    "student_id": "stu_001",
+    "today": "2026-01-14",
+    "enrollment_status": "enrolled",
+    "full_time": True,
+    "program_level": "graduate",
+    "program_start_date": "2025-08-26",
+    "opt_end_date": "2026-07-15",
+    "sevis_updated": True
+    }
+output = evaluate_rules(student_rec)
+r005 = None
+
+for rule in output["rule_results"]:
+      if rule ["rule_id"] == "R005":
+           r005 = rule
+
+check("R005 reports that student is fully compliant",
+    r005["status"] == "Pass")
+check("R005 reports correct compliant message",
+      r005["message"] == "Student fully compliant")
+
+
+# Test 12: R003 is triggered while R001, R002 & R004 pass
+print("\n Rule 003 is triggered")
+student_rec = {
+"student_id": "stu_001",
+"today": "2026-07-29",
+"enrollment_status": "not_enrolled",
+"full_time": True,
+"program_level": "graduate",
+"program_start_date": "2025-08-26",
+"opt_end_date": "2026-08-15",
+"sevis_updated": False
+}
+output = evaluate_rules(student_rec)
+r005 = None
+for rule in output["rule_results"]:
+    if rule ["rule_id"] == "R005":
+      r005 = rule
+
+check("R005 reports that student is not fully compliant",
+r005["status"] == "Pass")
+check("R005 reports correct compliant message",
+r005["message"] == "One or more of the compliance rules have been triggered. See details above!")
+check("Overall status is YELLOW when R003 is triggered",
+      output["overall_status"]== "YELLOW")
+
+
+# Test 13: R001 is triggered while R002, R003 & R004 pass
+print("\n Rule 001 is triggered")
+student_rec = {
+"student_id": "stu_001",
+"today": "2026-07-29",
+"enrollment_status": "not_enrolled",
+"full_time": True,
+"program_level": "graduate",
+"program_start_date": "2025-08-26",
+"opt_end_date": "2026-07-01",
+"sevis_updated": False
+}
+output = evaluate_rules(student_rec)
+r005 = None
+for rule in output["rule_results"]:
+    if rule ["rule_id"] == "R005":
+      r005 = rule
+
+check("R005 reports that student is not fully compliant",
+r005["status"] == "Pass")
+check("R005 reports correct compliant message",
+r005["message"] == "One or more of the compliance rules have been triggered. See details above!")
+check("Overall status is RED when R001 is triggered",
+      output["overall_status"]== "RED")
+
+
+# Test 14: R002 & R004 is triggered while R001 & R003 pass
+print("\n Rules 002 & 004 are triggered")
+student_rec = {
+"student_id": "stu_001",
+"today": "2025-11-19",
+"enrollment_status": "enrolled",
+"full_time": False,
+"program_level": "graduate",
+"program_start_date": "2022-08-22",
+"sevis_updated": False
+}
+output = evaluate_rules(student_rec)
+r005 = None
+for rule in output["rule_results"]:
+    if rule["rule_id"] == "R005":
+        r005 = rule
+
+check("R005 reports that student is not fully compliant",
+r005["status"] == "Pass")
+check("R005 reports correct compliant message",
+r005["message"] == "One or more of the compliance rules have been triggered. See details above!")
+check("Overall status is RED when both RED and YELLOW are triggered",
+      output["overall_status"] == "RED")
+
+        
 # Final summary
 print("\n" + "=" * 55)
 print(f"  TESTS PASSED: {passed}")
@@ -191,3 +294,5 @@ if failed == 0:
     print(" ✅  All edge case tests passed successfully! 🎉")
 else:
     print(" ❌  Some edge case tests failed. Please review the results above. ❌")
+
+
