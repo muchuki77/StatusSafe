@@ -513,7 +513,42 @@ def process_batch(rows: List[Dict[str, str]]) -> Dict[str, Any]:
         "results": valid_results,
         "skipped": skipped_rows
     }
+
+
+def extract_features(student_record: Dict[str, Any]) -> Dict[str, float]:
+    """
+    Extracts numeric ML features from a CSV (student record).
+    Returns a list of features for use in logistic regression.
+    """
+    is_enrolled = 1.0 if student_record.get("enrollment_status", "").lower().strip() == "enrolled" else 0.0
+    is_full_time = 1.0 if student_record.get("full_time", False) else 0.0
+    sevis_updated = 1.0 if student_record.get("sevis_updated", False) else 0.0
+
+    # Calculate days until OPT end date if provided
+    opt_end_date_str = student_record.get("opt_end_date", "")
+    has_opt_end_date = 1.0 if opt_end_date_str else 0.0
+
+    if opt_end_date_str:
+        try:
+            today = parse_iso_date(student_record['today'], 'today')
+            opt_end_date = parse_iso_date(opt_end_date_str, 'opt_end_date')
+            days_until_opt_end = (opt_end_date - today).days
+        except ValueError:
+            days_until_opt_end = None  #Invalid date format   
+    else:
+        days_until_opt_end = None  #No opt_end_date provided   
+
+    opt_days_masked = (days_until_opt_end if days_until_opt_end is not None else 0.0) * has_opt_end_date
+
+    return{
     
+        "is_enrolled": is_enrolled,
+        "is_full_time": is_full_time,
+        "sevis_updated": sevis_updated,
+        "has_opt_end_date": has_opt_end_date,
+        "opt_days_masked": opt_days_masked   
+    }
+
 #####
 
 if __name__ == "__main__":
