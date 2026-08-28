@@ -2,7 +2,7 @@ import json
 import sys
 import os
 
-# Build the project rood relative to the scrpt's location
+# Build the project root relative to the scrpt's location
 # scrpt  location: tests/verify_all_samples.py
 # Project root is one level up .../
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))

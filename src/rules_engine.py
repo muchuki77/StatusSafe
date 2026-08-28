@@ -537,7 +537,10 @@ def extract_features(student_record: Dict[str, Any]) -> Dict[str, float]:
             days_until_opt_end = None  #Invalid date format   
     else:
         days_until_opt_end = None  #No opt_end_date provided   
-
+        
+# for students not on OPT, we can set days_until_opt_end to 0.0 if no opt_end_date is provided
+# but the risk is the model may misinterpret this as a student with an opt_end_date in the past.
+# Rather than hoping that the model will learn this, we can mask the days_until_opt_end feature with a binary indicator for whether opt_end_date is provided.
     opt_days_masked = (days_until_opt_end if days_until_opt_end is not None else 0.0) * has_opt_end_date
 
     return{

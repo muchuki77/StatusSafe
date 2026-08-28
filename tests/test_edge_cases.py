@@ -8,7 +8,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, PROJECT_ROOT)
 sys.path.insert(0, os.path.join(PROJECT_ROOT, 'src'))
 
-from rules_engine import validate_csv_row, process_batch, evaluate_rules, compute_overall_status
+from rules_engine import validate_csv_row, process_batch, evaluate_rules, compute_overall_status,extract_features
 
 print("\n" + "=" * 55)
 print("  STATUSSAFE — EDGE CASE TESTS")
@@ -283,7 +283,48 @@ r005["message"] == "One or more of the compliance rules have been triggered. See
 check("Overall status is RED when both RED and YELLOW are triggered",
       output["overall_status"] == "RED")
 
-        
+# Test 15: Feature extraction with missing opt_end_date
+print("\n Feature extraction with missing opt_end_date")
+student_record = {
+    "student_id": "stu_001",
+    "today": "2026-01-14",
+    "enrollment_status": "enrolled",
+    "full_time": True,
+    "program_level": "graduate",
+    "program_start_date": "2025-08-26",
+    # opt_end_date is missing
+    "sevis_updated": True
+}
+features_no_opt = extract_features(student_record)
+
+check("is_enrolled feature is 1.0 for enrolled student",features_no_opt["is_enrolled"] == 1.0)
+check("is_full_time feature is 1.0 for full-time student",features_no_opt["is_full_time"] == 1.0)
+check("sevis_updated feature is 1.0 when True",features_no_opt["sevis_updated"] == 1.0)
+check("has_opt_end_date feature is 0.0 when opt_end_date is missing",features_no_opt["has_opt_end_date"] == 0.0)
+check("opt_days_masked feature is 0.0 when not on OPT",features_no_opt["opt_days_masked"] == 0.0)
+
+# Test 16: Feature extraction for student who is past their OPT end date
+print("\n Feature extraction for student past OPT end date")
+student_record_past_opt = {
+    "student_id": "stu_002",
+    "today": "2026-01-14",
+    "enrollment_status": "not_enrolled",
+    "full_time": False,
+    "program_level": "graduate",
+    "program_start_date": "2024-08-26",
+    "opt_end_date": "2025-12-01",  # this student's OPT ended in December 2025
+    "sevis_updated": False
+}
+features_past_opt = extract_features(student_record_past_opt)     
+
+check("is_enrolled feature is 0.0 for not enrolled student",features_past_opt["is_enrolled"] == 0.0)
+check("is_full_time feature is 0.0 for part-time student",features_past_opt["is_full_time"] == 0.0)
+check("sevis_updated feature is 0.0 when False",features_past_opt["sevis_updated"] == 0.0)
+check("has_opt_end_date feature is 1.0 when opt_end_date is provided",features_past_opt["has_opt_end_date"] == 1.0)
+check("opt_days_masked feature is -44.0 past due OPT",features_past_opt["opt_days_masked"] == -44.0)
+check("opt_days_masked feature is negative  when OPT end date is in the past",features_past_opt["opt_days_masked"] < 0.0)     
+
+
 # Final summary
 print("\n" + "=" * 55)
 print(f"  TESTS PASSED: {passed}")
