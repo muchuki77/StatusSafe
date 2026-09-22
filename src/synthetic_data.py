@@ -54,9 +54,34 @@ for i in range(10):
     print(combined_results)
 
 
+def generate_enrollment_status():
+    """
+    Generate a sysnthetic data for 50% students enrolled and 50% students not enrolled
+    """
+    enrolment_options = ["enrolled", "not_enrolled"]
+    enrolment_weights = [0.5, 0.5]  
+
+    return (weighted_choice(enrolment_options, weights=enrolment_weights))
+
+for i in range(10):
+    enrolment_results = generate_enrollment_status()
+    print(enrolment_results)
+
+def generate_full_time():
+    """
+    Generate synthetic full time status; 50 % true and 50% false
+    """
+    fulltime_options = [True, False]
+    fulltime_weights = [0.5, 0.5]
+
+    return(weighted_choice(fulltime_options, weights=fulltime_weights))
+
+for i in range(10):
+    full_time_results = generate_full_time()
+    print(full_time_results)
 
 
 
 
 
-    
+
