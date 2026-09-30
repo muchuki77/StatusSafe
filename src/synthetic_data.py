@@ -56,7 +56,7 @@ for i in range(10):
 
 def generate_enrollment_status():
     """
-    Generate a sysnthetic data for 50% students enrolled and 50% students not enrolled
+    Generate a synthetic data for 50% students enrolled and 50% students not enrolled
     """
     enrolment_options = ["enrolled", "not_enrolled"]
     enrolment_weights = [0.5, 0.5]  
@@ -79,6 +79,12 @@ def generate_full_time():
 for i in range(10):
     full_time_results = generate_full_time()
     print(full_time_results)
+
+
+# days since end of OPT to determine whether a student is past the 60-day grace period after end of OPT
+days_since_opt_ended = (today - opt_end_date).days
+triggered = (days_since_opt_ended > 60) and (enrollment_status == "not_enrolled")
+
 
 
 
