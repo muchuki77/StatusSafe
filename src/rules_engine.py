@@ -228,7 +228,7 @@ def rule_004_under_enrollment_while_on_f1(student_record: Dict[str, Any]) -> Rul
     )
 
 ##Rule 5: No issues detected
-#*** Risk level** GREEN Student is fully enrolled, has maintained F1 status with sevis record active and updated.
+*** Risk level** GREEN Student is fully enrolled, has maintained F1 status with sevis record active and updated.
 def rule_005_no_issues_detected(results: list[RuleResult]) -> RuleResult:
     no_issues_detected = all(r.status == "Pass" for r in results)
     if not no_issues_detected:
@@ -257,6 +257,62 @@ def rule_005_no_issues_detected(results: list[RuleResult]) -> RuleResult:
             }
                 
             )
+## Rule 6: opt grace period exceeded
+*** Risk level** RED Student has exceeded the 60 day grace period after the end of OPT
+def rule_006_opt_end_exceeded(student_record: Dict[str, Any]) -> RuleResult:
+    # Skip this rule if opt_end_date not provided
+    if "opt_end_date" not in student_record or \
+        student_record["opt_end_date"] == "":
+        return RuleResult(
+            rule_id="R006",
+            name="Post OPT grace period status",
+            status="Pass",
+            severity="Info",
+            message="opt_end_date not provided — rule not applicable.",
+            recommended_action="No action needed.",
+            evidence={}
+        )
+
+    today = parse_iso_date(student_record['today'], 'today')
+    opt_end_date = parse_iso_date(student_record["opt_end_date"], "opt_end_date")
+    enrollment_status = student_record["enrollment_status"]
+    sevis_updated = student_record["sevis_updated"]
+
+    # days since end of OPT to determine whether a student is past the 60-day grace period after end of OPT
+    days_since_opt_ended = (today - opt_end_date).days
+    triggered = (days_since_opt_ended > 60) and (enrollment_status == "not_enrolled")
+
+    if triggered:
+        return RuleResult(
+            rule_id="R006",
+            name="Post OPT grace period status",
+            status="Triggered",
+            severity="Critical", # Risk level: RED
+            message="Exceeded 60-day Grace period after OPT.",
+            recommended_action="Review SEVIS record and confirm next decision.",
+            evidence={
+                "today": student_record["today"],
+                "opt_end_date": student_record["opt_end_date"],   
+            },
+        )
+    return RuleResult(
+        rule_id="R006",
+        name="Post OPT grace period status",
+        status="Pass",
+        severity="Info",
+        message="No issues detected with OPT end date and 60 day grace period.",
+        recommended_action="No action needed.",
+        evidence={
+            "today": student_record["today"],
+            "opt_end_date": student_record["opt_end_date"],
+            "sevis_updated": sevis_updated,   
+        },
+    )
+
+
+
+
+
     
 def compute_overall_status(results: list[RuleResult]) -> str:
     for result in results:
@@ -276,10 +332,11 @@ def evaluate_rules(student_record: Dict[str, Any]) -> Dict[str, Any]:
     rule_001_opt_ended_without_sevis_update,
     rule_002_enrollment_without_sevis_program_extension_update,
     rule_003_opt_grace_period_nearing_expiration,
-    rule_004_under_enrollment_while_on_f1
+    rule_006_opt_end_exceeded,
+    rule_004_under_enrollment_while_on_f1,
     ]
     
-    # create a list of rule 1 - 4 
+    # create a list of rule 1 - 6
     results = [rule(student_record) for rule in rules_needing_record]
     # call rule 005 by itself
     r005_result = rule_005_no_issues_detected(results)

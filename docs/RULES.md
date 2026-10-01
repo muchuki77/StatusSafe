@@ -72,6 +72,23 @@ Student is enrolled but not full time while maintaining F-1 status.
 *** Risk level** GREEN
 Student is fully enrolled, has maintained F1 status with sevis record active and updated. 
 
+### Rule 6: OPT grace period exceeded
+**Risk Level:** - RED
+**Description:**  
+F-1 students have a 60-day grace period after end of OPT to either progress wu=ith their studies, extend their OPT if on STEM program, or decide to leave the U.S 
+**Trigger Condition:**  
+- days since end of OPT exceed 60 with no SEVIS update
+**Reason Provided:**  
+Student has completed OPT but has exceeded the 60 day grace period with no Sevis update. 
+**Recommended Action:**  
+- Contact DSO and initiate corrective steps.
+
+
+### Rule 5: No issues detected
+
+
+### Rule 7: No enrollment $ No OPT recorded
+
 
 ## Rule Evaluation Logic
 - Each student record is evaluated independently.

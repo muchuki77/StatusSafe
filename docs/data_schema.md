@@ -59,10 +59,9 @@
 - **Allowed values:** any valid calendar date
 - **Constraints:**
   - if present, must be `>= program_start_date`
-- **Notes:** leave blank or omit entirely for students who have not reached OPT stage. R001 and R003 are skipped automatically when this field is absent.
+- **Notes:** a past opt end date should stay populated as igt helps determine if the 60-day grace period has exceeded. 
 
 ### 9) sevis_updated
-
 - **Type:** boolean
 - **Required:** yes
 - **Allowed values:** `true`, `false`
