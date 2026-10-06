@@ -322,7 +322,88 @@ check("is_full_time feature is 0.0 for part-time student",features_past_opt["is_
 check("sevis_updated feature is 0.0 when False",features_past_opt["sevis_updated"] == 0.0)
 check("has_opt_end_date feature is 1.0 when opt_end_date is provided",features_past_opt["has_opt_end_date"] == 1.0)
 check("opt_days_masked feature is -44.0 past due OPT",features_past_opt["opt_days_masked"] == -44.0)
-check("opt_days_masked feature is negative  when OPT end date is in the past",features_past_opt["opt_days_masked"] < 0.0)     
+check("opt_days_masked feature is negative  when OPT end date is in the past",features_past_opt["opt_days_masked"] < 0.0) 
+
+# Test 17: R006  does not trigger at exactly 60 days after end of OPT
+print("\n R006 boundary - exactly 60 days since end of OPT")
+student_record_past_opt = {
+    "student_id": "stu_r006_boundary",
+    "today": "2026-01-14",
+    "enrollment_status": "not_enrolled",
+    "full_time": False,
+    "program_level": "graduate",
+    "program_start_date": "2024-08-26",
+    "opt_end_date": "2025-11-15",  # this student's OPT ended in November 15th 2025
+    "sevis_updated": True
+}
+output = evaluate_rules(student_record_past_opt)
+r006 = None
+for rule in output["rule_results"]:
+      if rule["rule_id"] == "R006":
+            r006 = rule
+
+check("R006 does not trigger at exactly 60 days", r006["status"] == "Pass")
+check("overall status is not RED from R006 at the boundary", output["overall_status"] != "RED")
+
+# Test 18: R006 triggers at 61 days after end of OPT
+print("\n R006 triggers at 61 days since end of OPT")
+student_record_past_opt = {
+    "student_id": "stu_r006_boundary",
+    "today": "2026-01-15",
+    "enrollment_status": "not_enrolled",
+    "full_time": False,
+    "program_level": "graduate",
+    "program_start_date": "2024-08-26",
+    "opt_end_date": "2025-11-15",  # this student's OPT ended in November 15th 2025
+    "sevis_updated": True
+}
+output = evaluate_rules(student_record_past_opt)
+r006 = None
+for rule in output["rule_results"]:
+      if rule["rule_id"] == "R006":
+            r006 = rule 
+check("R006 triggers at 61 days", r006["status"] == "Triggered")
+check("overall status is RED from R006 at 61 days", output["overall_status"] == "RED")
+check("R006 severity is Critical when triggered", r006["severity"] == "Critical")
+
+# Test 19: R006 rule not applicable when opt_end_date is not provided
+print("\n R006 not applicable when opt_end_date is missing")
+student_record_no_opt = {
+    "student_id": "stu_r006_no_opt",
+    "today": "2026-01-15",
+    "enrollment_status": "not_enrolled",
+    "full_time": False,
+    "program_level": "graduate",
+    "program_start_date": "2024-08-26",
+    # opt_end_date is missing
+    "sevis_updated": True
+}
+output = evaluate_rules(student_record_no_opt)
+r006 = None
+for rule in output["rule_results"]:
+      if rule["rule_id"] == "R006":
+            r006 = rule             
+check("R006 is not applicable when opt_end_date is missing", r006["status"] == "Pass")
+
+# Test 20: R006 pass when student is 90+ days past OPT end date but enrollement_status is "enrolled"
+print("\n R006 pass when student is 90+ days past OPT end date but enrolled")
+student_record_enrolled = {
+    "student_id": "stu_r006_enrolled",
+    "today": "2026-01-15",
+    "enrollment_status": "enrolled",  # student is enrolled
+    "full_time": True,
+    "program_level": "graduate",
+    "program_start_date": "2024-08-26",
+    "opt_end_date": "2025-10-15",  # this student's 92 days past OPT end date
+    "sevis_updated": False
+}
+output = evaluate_rules(student_record_enrolled)
+r006 = None
+for rule in output["rule_results"]:
+      if rule["rule_id"] == "R006":
+            r006 = rule
+check("R006 passes when student is 90+ days past OPT end date but enrolled", r006["status"] == "Pass")
+
 
 
 # Final summary

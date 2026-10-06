@@ -228,7 +228,7 @@ def rule_004_under_enrollment_while_on_f1(student_record: Dict[str, Any]) -> Rul
     )
 
 ##Rule 5: No issues detected
-*** Risk level** GREEN Student is fully enrolled, has maintained F1 status with sevis record active and updated.
+## Risk level: GREEN Student is fully enrolled, has maintained F1 status with sevis record active and updated.
 def rule_005_no_issues_detected(results: list[RuleResult]) -> RuleResult:
     no_issues_detected = all(r.status == "Pass" for r in results)
     if not no_issues_detected:
@@ -258,7 +258,19 @@ def rule_005_no_issues_detected(results: list[RuleResult]) -> RuleResult:
                 
             )
 ## Rule 6: opt grace period exceeded
-*** Risk level** RED Student has exceeded the 60 day grace period after the end of OPT
+## Risk level: RED Student has exceeded the 60 day grace period after the end of OPT
+# NOTE: R006 checks enrollment_status == "not_enrolled" as its "unresolved" signal,
+# but real SEVIS behavior is more complex than this one flag. 
+# Per SEVP: once a record auto-completes at day 61 (confirmed via studyinthestates.dhs.gov), it
+# cannot be reactivated without a formal SEVP correction request or USCIS reinstatement 
+
+# Simply changing enrollment_status back to "enrolled" in a
+# school's own registrar does not, by itself, reflect a truly resolved SEVIS
+# record. 
+# 
+# Current schema has no field to distinguish "genuinely resolved via
+# formal process" from "enrollment_status flipped without underlying SEVIS fix."
+# Worth revisiting if/when a richer SEVIS-record-status field is added.
 def rule_006_opt_end_exceeded(student_record: Dict[str, Any]) -> RuleResult:
     # Skip this rule if opt_end_date not provided
     if "opt_end_date" not in student_record or \
