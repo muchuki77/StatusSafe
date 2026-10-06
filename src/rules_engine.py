@@ -321,11 +321,42 @@ def rule_006_opt_end_exceeded(student_record: Dict[str, Any]) -> RuleResult:
         },
     )
 
+def rule_007_no_enrollment_status_and_no_opt_date(student_record: Dict[str, Any]) -> RuleResult:
+    enrollment_status = student_record.get("enrollment_status")
+    has_opt_date = "opt_end_date" in student_record and student_record["opt_end_date"] != ""
+
+    triggered = (enrollment_status =="not_enrolled") and not has_opt_date
+
+    if triggered:
+        return RuleResult(
+            rule_id="R007",
+            name="No Enrollment Status and No OPT Date",
+            status="Triggered",
+            severity="Critical",  # Risk level: RED
+            message="Student record lacks both enrollment status and OPT end date.",
+            recommended_action="Verify student record and update missing information.",
+            evidence={
+                "enrollment_status": enrollment_status,
+                "has_opt_date": has_opt_date,
+            },
+        )
+    return RuleResult(
+        rule_id="R007",
+        name="No Enrollment Status and No OPT Date",
+        status="Pass",
+        severity="Info",
+        message="Student record has either enrollment status or OPT end date.",
+        recommended_action="No action needed.",
+        evidence={
+            "enrollment_status": enrollment_status,
+            "has_opt_date": has_opt_date,
+        },
+    )
 
 
 
 
-    
+
 def compute_overall_status(results: list[RuleResult]) -> str:
     for result in results:
         if result.status == "Triggered" and result.severity == "Critical":
