@@ -257,6 +257,8 @@ def rule_005_no_issues_detected(results: list[RuleResult]) -> RuleResult:
             }
                 
             )
+
+    
 ## Rule 6: opt grace period exceeded
 ## Risk level: RED Student has exceeded the 60 day grace period after the end of OPT
 # NOTE: R006 checks enrollment_status == "not_enrolled" as its "unresolved" signal,
@@ -299,7 +301,7 @@ def rule_006_opt_end_exceeded(student_record: Dict[str, Any]) -> RuleResult:
             rule_id="R006",
             name="Post OPT grace period status",
             status="Triggered",
-            severity="Critical", # Risk level: RED
+            severity="Critical", # Risk level is RED
             message="Exceeded 60-day Grace period after OPT.",
             recommended_action="Review SEVIS record and confirm next decision.",
             evidence={
@@ -330,10 +332,10 @@ def rule_007_no_enrollment_status_and_no_opt_date(student_record: Dict[str, Any]
     if triggered:
         return RuleResult(
             rule_id="R007",
-            name="No Enrollment Status and No OPT Date",
+            name="Not enrolled and No OPT Date in records",
             status="Triggered",
-            severity="Critical",  # Risk level: RED
-            message="Student record lacks both enrollment status and OPT end date.",
+            severity="Critical",  # Risk level is RED
+            message="Student not_enrolled with No OPT record.",
             recommended_action="Verify student record and update missing information.",
             evidence={
                 "enrollment_status": enrollment_status,
@@ -342,10 +344,10 @@ def rule_007_no_enrollment_status_and_no_opt_date(student_record: Dict[str, Any]
         )
     return RuleResult(
         rule_id="R007",
-        name="No Enrollment Status and No OPT Date",
+        name="Not enrolled and No OPT Date in records",
         status="Pass",
         severity="Info",
-        message="Student record has either enrollment status or OPT end date.",
+        message="Student has an active enrollment or a recorded OPT authorization.",
         recommended_action="No action needed.",
         evidence={
             "enrollment_status": enrollment_status,
@@ -377,9 +379,10 @@ def evaluate_rules(student_record: Dict[str, Any]) -> Dict[str, Any]:
     rule_003_opt_grace_period_nearing_expiration,
     rule_006_opt_end_exceeded,
     rule_004_under_enrollment_while_on_f1,
+    rule_007_no_enrollment_status_and_no_opt_date
     ]
     
-    # create a list of rule 1 - 6
+    # create a list of rule 1 - 7
     results = [rule(student_record) for rule in rules_needing_record]
     # call rule 005 by itself
     r005_result = rule_005_no_issues_detected(results)
@@ -640,8 +643,11 @@ def extract_features(student_record: Dict[str, Any]) -> Dict[str, float]:
         
 # for students not on OPT, we can set days_until_opt_end to 0.0 if no opt_end_date is provided
 # but the risk is the model may misinterpret this as a student with an opt_end_date in the past.
-# Rather than hoping that the model will learn this, we can mask the days_until_opt_end feature with a binary indicator for whether opt_end_date is provided.
+# Rather than hoping that the model will learn this, we can mask the days_until_opt_end feature with a binary indicator 
+# for whether opt_end_date is provided.
     opt_days_masked = (days_until_opt_end if days_until_opt_end is not None else 0.0) * has_opt_end_date
+    r007_flag = (1 - is_enrolled) * (1 - has_opt_end_date)  # 1 if not enrolled and no opt_end_date, else 0
+
 
     return{
     
@@ -649,7 +655,8 @@ def extract_features(student_record: Dict[str, Any]) -> Dict[str, float]:
         "is_full_time": is_full_time,
         "sevis_updated": sevis_updated,
         "has_opt_end_date": has_opt_end_date,
-        "opt_days_masked": opt_days_masked   
+        "opt_days_masked": opt_days_masked,
+        "r007_flag": r007_flag 
     }
 
 #####

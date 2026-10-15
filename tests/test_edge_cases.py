@@ -404,8 +404,66 @@ for rule in output["rule_results"]:
             r006 = rule
 check("R006 passes when student is 90+ days past OPT end date but enrolled", r006["status"] == "Pass")
 
+# Test 21: R007 triggers when student is not enrolled and has no opt_end_date
+print("\n R007 triggers when student is not enrolled and has no opt_end_date")
+student_record_r007 = {
+    "student_id": "stu_r007",
+    "today": "2026-01-15",
+    "enrollment_status": "not_enrolled",  # student not enrolled
+    "full_time": False,
+    "program_level": "graduate",
+    "program_start_date": "2024-08-26",
+    # opt_end_date is missing
+    "sevis_updated": True
+}
+output = evaluate_rules(student_record_r007)
+r007 = None
+for rule in output["rule_results"]:
+      if rule["rule_id"] == "R007":
+            r007 = rule 
+check("R007 triggers when student is not enrolled and has no opt_end_date", r007["status"] == "Triggered")
+check("R007 severity is Critical when triggered", r007["severity"] == "Critical")   
+
+# Test 22: R007 passes when student is enrolled and has no opt_end_date
+print("\n R007 pass when student is enrolled and has no opt_end_date")
+student_record_r007_pass = {
+    "student_id": "stu_r007_pass",
+    "today": "2026-01-15",
+    "enrollment_status": "enrolled",  # student is enrolled
+    "full_time": True,
+    "program_level": "graduate",
+    "program_start_date": "2024-08-26",
+    # opt_end_date is missing
+    "sevis_updated": True
+}
+output = evaluate_rules(student_record_r007_pass)
+r007 = None
+for rule in output["rule_results"]:
+      if rule["rule_id"] == "R007":
+            r007 = rule 
+check("R007 passes when student is enrolled and has no opt_end_date", r007["status"] == "Pass")
+
+# Test 23: R007 passes when student is not enrolled but has an opt_end_date
+print("\n R007 pass when student is not enrolled but has an opt_end_date")
+student_record_r007_pass2 = {
+    "student_id": "stu_r007_pass2",
+    "today": "2026-01-15",
+    "enrollment_status": "not_enrolled",  # student not enrolled
+    "full_time": False,
+    "program_level": "graduate",
+    "program_start_date": "2024-08-26",
+    "opt_end_date": "2026-12-01",  # opt_end_date is provided
+    "sevis_updated": True
+}
+output = evaluate_rules(student_record_r007_pass2)
+r007 = None
+for rule in output["rule_results"]:
+      if rule["rule_id"] == "R007":
+            r007 = rule
+check("R007 passes when student is not enrolled but has an opt_end_date", r007["status"] == "Pass")   
 
 
+# Test 24: 
 # Final summary
 print("\n" + "=" * 55)
 print(f"  TESTS PASSED: {passed}")

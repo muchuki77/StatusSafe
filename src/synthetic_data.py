@@ -16,13 +16,15 @@ def days_until_end_of_opt():
     """
     Generate synthetic data for days until end of OPT.
     """
-    bucket_options = ["expired", "within_grace_period", "safe"]
-    bucket_weights = [0.45, 0.35, 0.2] # because we want the model to learn how to identify expired and within grace period students more than safe students
+    bucket_options = ["grace_period_exceeded", "expired", "within_grace_period", "safe"]
+    bucket_weights = [0.25, 0.2, 0.35, 0.2] # because we want the model to learn how to identify expired and within grace period students more than safe students
 
     chosen_bucket = weighted_choice(bucket_options, bucket_weights)
 
-    if chosen_bucket == "expired":
-        result =  random.randint(-30, -1)
+    if chosen_bucket == "grace_period_exceeded":
+        result =  random.randint(-120, -61)
+    elif chosen_bucket == "expired":
+        result = random.randint(-60,-1)
     elif chosen_bucket == "within_grace_period":
         result = random.randint(0, 60)
     else:
@@ -30,11 +32,12 @@ def days_until_end_of_opt():
 
     return {"chosen_bucket": chosen_bucket, "days": result}
 
-
-for i in range(15):
+tally = {}
+for i in range(1000):
     final_result = days_until_end_of_opt()
-    # print(f"{final_result['chosen_bucket']} : {final_result['days']} days until end of OPT")
-
+    tally[final_result['chosen_bucket']] = tally.get(final_result['chosen_bucket'], 0) + 1
+    #print(f"{final_result['chosen_bucket']} : {final_result['days']} days until end of OPT")
+print(tally)
 
 #  write a fuction that generates the opt date as a date based on the days until end of OPT
 def generate_opt_end_date(today_str):
@@ -53,7 +56,7 @@ for i in range(10):
     combined_results = generate_opt_end_date("2026-08-25")
     print(combined_results)
 
-
+# enrollment status generation function
 def generate_enrollment_status():
     """
     Generate a synthetic data for 50% students enrolled and 50% students not enrolled
@@ -67,6 +70,8 @@ for i in range(10):
     enrolment_results = generate_enrollment_status()
     print(enrolment_results)
 
+
+# full time 
 def generate_full_time():
     """
     Generate synthetic full time status; 50 % true and 50% false
@@ -80,10 +85,52 @@ for i in range(10):
     full_time_results = generate_full_time()
     print(full_time_results)
 
+# generate synthetic SEVIS updated status; 70% false and 30% true if on OPT AND 70% true and 30% false if not on OPT
+def generate_sevis_updated(is_on_opt):
+    """
+    Generate synthetic SEVIS updated status; 70% false and 30% true if on OPT AND 70% true and 30% false if not on OPT
+    """
+    if is_on_opt:
+        sevis_weights = [0.7, 0.3] # 70% false and 30% true if on OPT
+    else:           
+        sevis_weights = [0.3, 0.7] # 30% false and 70% true if not on OPT
+    sevis_options = [False, True]
 
-# days since end of OPT to determine whether a student is past the 60-day grace period after end of OPT
-days_since_opt_ended = (today - opt_end_date).days
-triggered = (days_since_opt_ended > 60) and (enrollment_status == "not_enrolled")
+    return weighted_choice(sevis_options, weights=sevis_weights)
+tally = {}
+for i in range(1000):
+    sevis_results = generate_sevis_updated(is_on_opt=True)
+    tally[sevis_results] = tally.get(sevis_results, 0) + 1
+print(tally)
+
+tally_b = {}
+for i in range(1000):
+    sevis_results = generate_sevis_updated(is_on_opt=False)
+    tally_b[sevis_results] = tally_b.get(sevis_results, 0) + 1
+print(tally_b)
+
+
+# Student ID generation function
+def generate_student_id():
+    """
+    Generate a synthetic student ID.
+    """
+    student_ids = []
+    for i in range(500):
+        student_id = f"stu_{random.randint(100, 600)}"
+        print(student_id)
+        student_ids.append(student_id)
+
+    return student_ids
+
+
+
+
+
+
+
+    
+
 
 
 
