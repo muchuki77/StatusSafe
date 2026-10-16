@@ -111,17 +111,27 @@ print(tally_b)
 
 
 # Student ID generation function
-def generate_student_id():
-    """
-    Generate a synthetic student ID.
-    """
-    student_ids = []
-    for i in range(500):
-        student_id = f"stu_{random.randint(100, 600)}"
-        print(student_id)
-        student_ids.append(student_id)
+def generate_student_id(index):
+    return f"stu_synth_{index:04d}"
+for i in [1,42,500]:
+    student_id = generate_student_id(i)
+    print(student_id)   
 
-    return student_ids
+# Generate a program start date
+def generate_program_start_date(today_str):
+    """
+    Generate synthetic program start date based on a random offset from today.
+    """
+    today_date = parse_iso_date(today_str, "today")
+    offset_days = random.randint(-1460, -180)  # Random offset between 4 years ago and today 
+    # assuming that students can start their program anytime in the last 4 years
+    program_start_date = today_date + timedelta(days=offset_days)
+    return program_start_date.isoformat()   
+
+# print(generate_program_start_date("2026-08-25"))
+for i in range(10):
+    program_start_date = generate_program_start_date("2026-08-25")
+    print(program_start_date)   
 
 
 
